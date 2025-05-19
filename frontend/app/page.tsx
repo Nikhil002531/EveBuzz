@@ -1093,9 +1093,11 @@ export default function EveBuzzLandingPage() {
           </div>
 
           <div className="text-center mt-12">
-            <button className="px-8 py-3 border border-amber-500 text-amber-500 rounded-lg hover:bg-slate-800 transition-colors">
-              View All Events
-            </button>
+            <Link href="\events">
+              <button className="px-8 py-3 border border-amber-500 text-amber-500 rounded-lg hover:bg-slate-800 transition-colors">
+                View All Events
+              </button>
+            </Link>
           </div>
         </div>
       </section>
