@@ -116,8 +116,8 @@ export default function EveBuzzLandingPage() {
   // Check if a date has events
   const hasEvents = (date) => {
     return upcomingEvents.some(event => {
-      const eventStartDate = new Date(event.startDate);
-      const eventEndDate = new Date(event.endDate);
+      const eventStartDate = new Date(event.start_date);
+      const eventEndDate = new Date(event.end_date);
 
       // Check if the provided date falls within an event's date range
       return (
@@ -134,8 +134,8 @@ export default function EveBuzzLandingPage() {
   // Get events for selected date
   const getEventsForDate = (date) => {
     return upcomingEvents.filter(event => {
-      const eventStartDate = new Date(event.startDate);
-      const eventEndDate = new Date(event.endDate);
+      const eventStartDate = new Date(event.start_date);
+      const eventEndDate = new Date(event.end_date);
 
       // Check if the provided date falls within an event's date range
       return (
