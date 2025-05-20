@@ -5,6 +5,9 @@ class Event(models.Model):
         ('hackathon', 'Hackathon'),
         ('cultural', 'Cultural'),
         ('sports', 'Sports'),
+        ('competition', 'Competition'),
+        ('workshop', 'Workshop'),
+        ('seminar', 'Seminar'),
         ('others', 'Others'),
     ]
 

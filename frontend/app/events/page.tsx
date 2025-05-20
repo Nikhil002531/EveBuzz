@@ -262,7 +262,7 @@ const EventsList = () => {
               Refresh
             </Button>
 
-            <Link href="/add-event">
+            <Link href="/form">
               <Button className="bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:from-amber-600 hover:to-amber-700">
                 + Add New Event
               </Button>
