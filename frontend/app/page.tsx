@@ -585,15 +585,19 @@ export default function EveBuzzLandingPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-bold mb-4">Quick Links</h3>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-amber-500 transition-colors">Home</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-amber-500 transition-colors">Events</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-amber-500 transition-colors">Calendar</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-amber-500 transition-colors">Colleges</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-amber-500 transition-colors">About Us</a></li>
-              </ul>
-            </div>
+  <h3 className="text-lg font-bold mb-4">Quick Links</h3>
+  <ul className="space-y-2">
+    <li>
+      <a href="#" className="text-gray-400 hover:text-amber-500 transition-colors">Home</a>
+    </li>
+    <li>
+      <a href="#events" className="text-gray-400 hover:text-amber-500 transition-colors">Events</a>
+    </li>
+    <li>
+      <a href="#calendar" className="text-gray-400 hover:text-amber-500 transition-colors">Calendar</a>
+    </li>
+  </ul>
+</div>
 
             <div>
               <h3 className="text-lg font-bold mb-4">Resources</h3>
