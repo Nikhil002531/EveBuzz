@@ -1,4 +1,3 @@
-
 'use client'
 import { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Clock, MapPin, Users, ArrowRight, Search, Bell, User, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -34,7 +33,7 @@ const eventTypes = ["Hackathon", "Cultural", "Sports", "Workshop", "Seminar", "C
 export default function EveBuzzLandingPage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
-  
+
   // Calendar state
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -42,12 +41,12 @@ export default function EveBuzzLandingPage() {
 
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
 
-useEffect(() => {
-  fetch('http://localhost:8000/api/events/')
-    .then((res) => res.json())
-    .then((data) => setUpcomingEvents(data))
-    .catch((err) => console.error('Failed to fetch events:', err));
-}, []);
+  useEffect(() => {
+    fetch('http://localhost:8000/api/events/')
+      .then((res) => res.json())
+      .then((data) => setUpcomingEvents(data))
+      .catch((err) => console.error('Failed to fetch events:', err));
+  }, []);
 
 
   useEffect(() => {
@@ -119,16 +118,16 @@ useEffect(() => {
     return upcomingEvents.some(event => {
       const eventStartDate = new Date(event.startDate);
       const eventEndDate = new Date(event.endDate);
-      
+
       // Check if the provided date falls within an event's date range
       return (
-        date.getDate() === eventStartDate.getDate() && 
-        date.getMonth() === eventStartDate.getMonth() && 
+        date.getDate() === eventStartDate.getDate() &&
+        date.getMonth() === eventStartDate.getMonth() &&
         date.getFullYear() === eventStartDate.getFullYear()
       ) || (
-        date >= eventStartDate && 
-        date <= eventEndDate
-      );
+          date >= eventStartDate &&
+          date <= eventEndDate
+        );
     });
   };
 
@@ -137,14 +136,14 @@ useEffect(() => {
     return upcomingEvents.filter(event => {
       const eventStartDate = new Date(event.startDate);
       const eventEndDate = new Date(event.endDate);
-      
+
       // Check if the provided date falls within an event's date range
       return (
-        date.getDate() >= eventStartDate.getDate() && 
-        date.getDate() <= eventEndDate.getDate() && 
-        date.getMonth() >= eventStartDate.getMonth() && 
-        date.getMonth() <= eventEndDate.getMonth() && 
-        date.getFullYear() >= eventStartDate.getFullYear() && 
+        date.getDate() >= eventStartDate.getDate() &&
+        date.getDate() <= eventEndDate.getDate() &&
+        date.getMonth() >= eventStartDate.getMonth() &&
+        date.getMonth() <= eventEndDate.getMonth() &&
+        date.getFullYear() >= eventStartDate.getFullYear() &&
         date.getFullYear() <= eventEndDate.getFullYear()
       );
     });
@@ -163,25 +162,25 @@ useEffect(() => {
     const month = currentMonth.getMonth();
     const daysInMonth = getDaysInMonth(year, month);
     const firstDayOfMonth = getFirstDayOfMonth(year, month);
-    
+
     const days = [];
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    
+
     // Add empty cells for days before the first day of the month
     for (let i = 0; i < firstDayOfMonth; i++) {
       days.push(<div key={`empty-${i}`} className="h-10 w-10"></div>);
     }
-    
+
     // Add cells for days in the month
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
       const isToday = new Date().toDateString() === date.toDateString();
       const isSelected = selectedDate && selectedDate.toDateString() === date.toDateString();
       const dateHasEvents = hasEvents(date);
-      
+
       days.push(
-        <div 
-          key={day} 
+        <div
+          key={day}
           className={`h-10 w-10 flex flex-col items-center justify-center rounded-full cursor-pointer relative
             ${isToday ? 'bg-amber-100 text-amber-800' : ''}
             ${isSelected ? 'bg-amber-500 text-white' : 'hover:bg-gray-100'}
@@ -195,12 +194,12 @@ useEffect(() => {
         </div>
       );
     }
-    
+
     return (
       <div className="bg-white rounded-xl shadow-lg p-6">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-2">
-            <button 
+            <button
               onClick={prevMonth}
               className="p-1 rounded-full hover:bg-gray-100"
             >
@@ -209,7 +208,7 @@ useEffect(() => {
             <h3 className="text-lg font-bold text-slate-800">
               {monthNames[month]} {year}
             </h3>
-            <button 
+            <button
               onClick={nextMonth}
               className="p-1 rounded-full hover:bg-gray-100"
             >
@@ -217,7 +216,7 @@ useEffect(() => {
             </button>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-7 gap-2 mb-2">
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
             <div key={day} className="text-center text-sm font-medium text-gray-500">
@@ -225,7 +224,7 @@ useEffect(() => {
             </div>
           ))}
         </div>
-        
+
         <div className="grid grid-cols-7 gap-2">
           {days}
         </div>
@@ -242,7 +241,7 @@ useEffect(() => {
         </div>
       );
     }
-    
+
     return (
       <div className="bg-white rounded-xl shadow-lg p-6">
         <h3 className="text-lg font-bold mb-4 text-slate-800">
@@ -271,7 +270,7 @@ useEffect(() => {
       </div>
     );
   };
- 
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-gray-800 to-black text-gray-900 flex flex-col">
       {/* Navigation */}
@@ -293,7 +292,7 @@ useEffect(() => {
             <a href="#colleges" className="text-gray-200 hover:text-amber-500 transition-colors">Colleges</a>
             <a href="#about" className="text-gray-200 hover:text-amber-500 transition-colors">About</a>
           </div>
-          
+
 
           <div className="flex items-center space-x-4">
             <button className="hidden md:block px-4 py-2 rounded-md bg-slate-800 hover:bg-slate-700 text-white transition-colors">Sign In</button>
@@ -316,19 +315,23 @@ useEffect(() => {
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
-                  <button className="w-full px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-black rounded-lg hover:opacity-90 transition-all flex items-center justify-center font-semibold">
-                    Explore Events <ArrowRight className="ml-2 h-5 w-5" />
-                  </button>
+                  <Link href="/events">
+                    <button className="w-full px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-black rounded-lg hover:opacity-90 transition-all flex items-center justify-center font-semibold">
+                      Explore Events <ArrowRight className="ml-2 h-5 w-5" />
+                    </button>
+                  </Link>
                 </div>
                 <div className="flex-1">
-                  <button className="w-full px-6 py-3 border border-gray-600 text-gray-200 rounded-lg hover:bg-slate-800 transition-all">
-                    How It Works
-                  </button>
+                  <Link href="#how-it-works" scroll={true} className="w-full">
+                    <button className="w-full px-6 py-3 border border-gray-600 text-gray-200 rounded-lg hover:bg-slate-800 transition-all">
+                      How It Works
+                    </button>
+                  </Link>
                 </div>
               </div>
 
               <div className="mt-10 flex items-center space-x-4">
-                
+
               </div>
             </div>
 
@@ -382,9 +385,8 @@ useEffect(() => {
 
                 <select className="px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-700">
                   <option value="">All Locations</option>
-                  <option value="MIT">MIT</option>
-                  <option value="Stanford">Stanford</option>
-                  <option value="UCLA">UCLA</option>
+                  <option value="MIT">Bengaluru</option>
+                  <option value="Stanford">Mysore</option>
                 </select>
 
                 <button className="px-6 py-3 bg-amber-500 text-black rounded-lg hover:bg-amber-600 transition-colors font-semibold">
@@ -426,54 +428,56 @@ useEffect(() => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {upcomingEvents.slice(0, 3).map(event => (
-  <div key={event.id} className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow group">
-    <div className="relative">
-            <Image
-        src={
-          event.image.startsWith('http')
-            ? event.image
-            : `http://localhost:8000/media/${event.image.replace(/^\/?media\//, '')}`
-        }
-        alt={event.title}
-        width={400}
-        height={192}
-        className="w-full h-48 object-cover"
-      />
-      <div className="absolute top-4 left-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
-        {event.type === "others" ? event.other_type_name : event.type}
-      </div>
-    </div>
-    <div className="p-6">
-      <h3 className="text-xl font-bold mb-2 group-hover:text-amber-500 transition-colors">{event.title}</h3>
-      <div className="space-y-2 mb-4">
-        <div className="flex items-center text-gray-600">
-          <CalendarIcon className="h-4 w-4 mr-2" /> 
-          <span>{new Date(event.start_date).toLocaleDateString()} - {new Date(event.end_date).toLocaleDateString()}</span>
-        </div>
-        <div className="flex items-center text-gray-600">
-          <MapPin className="h-4 w-4 mr-2" />
-          <span>{event.location}</span>
-        </div>
-        <div className="flex items-center text-gray-600">
-          <Users className="h-4 w-4 mr-2" />
-          <span>{event.minTeamParticipants}–{event.maxTeamParticipants} Participants</span>
-        </div>
-      </div>
-      <a href={event.registrationLink} target="_blank" rel="noopener noreferrer">
-        <button className="w-full py-2 bg-slate-100 text-amber-600 font-medium rounded-lg hover:bg-amber-500 hover:text-white transition-colors">
-          Register Now
-        </button>
-      </a>
-    </div>
-  </div>
-))}
+              <div key={event.id} className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow group">
+                <div className="relative">
+                  <Image
+                    src={
+                      event.image.startsWith('http')
+                        ? event.image
+                        : `http://localhost:8000/media/${event.image.replace(/^\/?media\//, '')}`
+                    }
+                    alt={event.title}
+                    width={400}
+                    height={192}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="absolute top-4 left-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
+                    {event.type === "others" ? event.other_type_name : event.type}
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold mb-2 group-hover:text-amber-500 transition-colors">{event.title}</h3>
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-gray-600">
+                      <CalendarIcon className="h-4 w-4 mr-2" />
+                      <span>{new Date(event.start_date).toLocaleDateString()} - {new Date(event.end_date).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <MapPin className="h-4 w-4 mr-2" />
+                      <span>{event.location}</span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <Users className="h-4 w-4 mr-2" />
+                      <span>{event.minTeamParticipants}–{event.maxTeamParticipants} Participants</span>
+                    </div>
+                  </div>
+                  <a href={event.registrationLink} target="_blank" rel="noopener noreferrer">
+                    <button className="w-full py-2 bg-slate-100 text-amber-600 font-medium rounded-lg hover:bg-amber-500 hover:text-white transition-colors">
+                      Register Now
+                    </button>
+                  </a>
+                </div>
+              </div>
+            ))}
 
           </div>
 
           <div className="text-center mt-12">
-            <button className="px-8 py-3 border border-amber-500 text-amber-500 rounded-lg hover:bg-slate-800 transition-colors">
-              View All Events
-            </button>
+            <Link href="\events">
+              <button className="px-8 py-3 border border-amber-500 text-amber-500 rounded-lg hover:bg-slate-800 transition-colors">
+                View All Events
+              </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -554,7 +558,7 @@ useEffect(() => {
         </div>
       </section>
 
-     
+
       {/* Footer */}
       <footer className="bg-slate-900 text-white py-12 px-4">
         <div className="container mx-auto">
@@ -602,8 +606,8 @@ useEffect(() => {
               <h3 className="text-lg font-bold mb-4">Contact</h3>
               <ul className="space-y-2">
                 <li className="text-gray-400">support@evebuzz.com</li>
-                <li className="text-gray-400">+1 (555) 123-4567</li>
-                <li className="text-gray-400">123 Campus Drive, San Francisco, CA 94107</li>
+                <li className="text-gray-400">+91 1234567890</li>
+                <li className="text-gray-400">Dayananda Sagar Academy of Technology and Management, Bengaluru</li>
               </ul>
             </div>
           </div>
