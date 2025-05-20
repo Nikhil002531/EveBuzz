@@ -274,8 +274,13 @@ export default function EveBuzzLandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-gray-800 to-black text-gray-900 flex flex-col">
       {/* Navigation */}
-      <nav className={`sticky top-0 z-50 ${isScrolled ? 'bg-white shadow-md' : 'bg-transparent'} transition-all duration-300`}>
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <nav className={`sticky top-0 z-50 transition-all duration-300 ${
+  isScrolled
+    ? 'bg-gradient-to-b from-black/95 via-black/50 to-transparent backdrop-blur-sm'
+    : 'bg-transparent'
+}`}>
+
+      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center">
             <div className="flex items-center space-x-2">
               <div className="h-10 w-10 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 flex items-center justify-center">

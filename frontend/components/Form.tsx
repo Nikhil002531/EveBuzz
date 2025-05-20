@@ -26,7 +26,6 @@ const EventRegistrationForm = () => {
   const [formData, setFormData] = useState({
     title: '',
     type: '',
-    other_type_name: '',
     image: '',
     imageFile: null,
     imageSource: 'url', // 'url' or 'file'
@@ -132,9 +131,7 @@ const EventRegistrationForm = () => {
     // Check all required fields
     if (!formData.title.trim()) errors.push('Event title is required');
     if (!formData.type) errors.push('Event type is required');
-    if (formData.type === 'others' && !formData.other_type_name.trim()) {
-      errors.push('Please specify the event type');
-    }
+  
     if (formData.imageSource === 'url' && !formData.image.trim()) {
       errors.push('Event image URL is required');
     }
@@ -209,8 +206,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     // Use FormData for file upload
     body = new FormData();
     body.append('title', formData.title);
-    body.append('type', formData.type === 'others' ? formData.other_type_name : formData.type);
-    body.append('other_type_name', formData.other_type_name);
+   
     body.append('description', formData.description);
     body.append('minTeamParticipants', formData.minTeamParticipants);
     body.append('maxTeamParticipants', formData.maxTeamParticipants);
@@ -228,8 +224,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     // Use JSON for URL
     body = JSON.stringify({
       title: formData.title,
-      type: formData.type === 'others' ? formData.other_type_name : formData.type,
-      other_type_name: formData.other_type_name,
+      
       image: formData.image,
       description: formData.description,
       minTeamParticipants: parseInt(formData.minTeamParticipants),
@@ -304,7 +299,6 @@ const handleSubmit = async (e: React.FormEvent) => {
                   setFormData({
                     title: '',
                     type: '',
-                    other_type_name: '',
                     image: '',
                     imageFile: null,
                     imageSource: 'url',
@@ -412,23 +406,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               </div>
             </div>
 
-            {/* Other Type Name (conditional) */}
-            {formData.type === 'others' && (
-              <div>
-                <label className="block mb-2 flex items-center gap-2">
-                  <Tag size={16} className="text-amber-700" />
-                  Specify Event Type *
-                </label>
-                <Input
-                  name="other_type_name"
-                  value={formData.other_type_name}
-                  onChange={handleChange}
-                  placeholder="Specify the event type"
-                  required
-                  className="w-full"
-                />
-              </div>
-            )}
+           
 
             {/* Image Section */}
             <div>
@@ -599,7 +577,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               <div className="relative">
                 <label className="block mb-2 flex items-center gap-2">
                   <Users size={16} className="text-slate-600" />
-                  Minimum Team Participants *
+                  Minimum Team Participants
                 </label>
                 <Input
                   type="number"
@@ -607,7 +585,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                   value={formData.minTeamParticipants}
                   onChange={handleChange}
                   placeholder="Minimum team size"
-                  required
+                  
                   min="1"
                   className="w-full"
                 />

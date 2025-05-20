@@ -135,7 +135,9 @@ const EventsList = () => {
   // Calculate pagination
   const indexOfLastEvent = currentPage * eventsPerPage;
   const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
-  const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
+  const currentEvents = filteredEvents.length > 0
+    ? filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent)
+    : [];
   const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
 
   // Refresh event list
@@ -351,7 +353,7 @@ const EventsList = () => {
         {filteredEvents.length === 0 ? (
           <div className="bg-white rounded-xl shadow-lg p-12 text-center">
             <div className="w-16 h-16 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-              <Calendar className="h-8 w-8 text-gray-400" />
+              <CalendarIcon className="h-8 w-8 text-gray-400" />
             </div>
             <h3 className="text-xl font-semibold text-slate-800 mb-2">No events found</h3>
             <p className="text-gray-500 mb-6">
