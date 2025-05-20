@@ -289,8 +289,6 @@ export default function EveBuzzLandingPage() {
             <a href="#home" className="text-gray-200 hover:text-amber-500 transition-colors">Home</a>
             <a href="#events" className="text-gray-200 hover:text-amber-500 transition-colors">Events</a>
             <a href="#calendar" className="text-gray-200 hover:text-amber-500 transition-colors">Calendar</a>
-            <a href="#colleges" className="text-gray-200 hover:text-amber-500 transition-colors">Colleges</a>
-            <a href="#about" className="text-gray-200 hover:text-amber-500 transition-colors">About</a>
           </div>
 
 
@@ -510,13 +508,13 @@ export default function EveBuzzLandingPage() {
 
             <div className="lg:col-span-2">
               {renderEventsForSelectedDate()}
-            </div>
+            </div>1
           </div>
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="py-16 px-4 bg-black">
+      <section id='how-it-works' className="py-16 px-4 bg-black">
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">How EveBuzz Works</h2>
