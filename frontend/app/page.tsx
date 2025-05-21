@@ -411,23 +411,7 @@ export default function EveBuzzLandingPage() {
               <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">Featured Events</h2>
               <p className="text-gray-300 max-w-2xl">Discover the hottest events happening across college campuses near you.</p>
             </div>
-            <div className="mt-4 md:mt-0 flex gap-2">
-              <button
-                className={`px-4 py-2 rounded-full ${activeTab === 'all' ? 'bg-amber-500 text-black font-semibold' : 'bg-slate-800 text-gray-300 hover:bg-slate-700'}`}
-                onClick={() => setActiveTab('all')}
-              >
-                All
-              </button>
-              {['Hackathon', 'Cultural', 'Sports'].map(tab => (
-                <button
-                  key={tab}
-                  className={`px-4 py-2 rounded-full ${activeTab === tab.toLowerCase() ? 'bg-amber-500 text-black font-semibold' : 'bg-slate-800 text-gray-300 hover:bg-slate-700'}`}
-                  onClick={() => setActiveTab(tab.toLowerCase())}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
+
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

@@ -176,18 +176,18 @@ export default function EventDetailsPage() {
         </div>
       </nav>
 
-      {/* Breadcrumb */}
-      {/* <div className="container mx-auto px-4 py-4"> */}
-      {/*   <div className="flex items-center space-x-2 text-sm"> */}
-      {/*     <Link href="/" className="text-gray-400 hover:text-amber-500 transition-colors">Home</Link> */}
-      {/*     <span className="text-gray-500">/</span> */}
-      {/*     <Link href="/events" className="text-gray-400 hover:text-amber-500 transition-colors">Events</Link> */}
-      {/*     <span className="text-gray-500">/</span> */}
-      {/*     <span className="text-gray-300">{event.title}</span> */}
-      {/*   </div> */}
-      {/* </div> */}
-      {/**/}
-      {/* Hero Section */}
+      Breadcrumb
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center space-x-2 text-sm">
+          <Link href="/" className="text-gray-400 hover:text-amber-500 transition-colors">Home</Link>
+          <span className="text-gray-500">/</span>
+          <Link href="/events" className="text-gray-400 hover:text-amber-500 transition-colors">Events</Link>
+          <span className="text-gray-500">/</span>
+          <span className="text-gray-300">{event.title}</span>
+        </div>
+      </div>
+
+      Hero Section
       <section className="relative">
         <div className="relative h-96 md:h-[500px] overflow-hidden">
           <Image
