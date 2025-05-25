@@ -14,5 +14,5 @@ def hello(request):
 
 class CreatUserView(generics.CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = User
+    serializer_class = UserSerializer
     permission_classes = [AllowAny]
