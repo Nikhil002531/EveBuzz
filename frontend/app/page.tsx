@@ -5,6 +5,8 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
 
+import { Button } from '@/components/ui/button';
+
 
 
 // Sample event data
@@ -274,13 +276,12 @@ export default function EveBuzzLandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-gray-800 to-black text-gray-900 flex flex-col">
       {/* Navigation */}
-      <nav className={`sticky top-0 z-50 transition-all duration-300 ${
-  isScrolled
-    ? 'bg-gradient-to-b from-black/95 via-black/50 to-transparent backdrop-blur-sm'
-    : 'bg-transparent'
-}`}>
+      <nav className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled
+        ? 'bg-gradient-to-b from-black/95 via-black/50 to-transparent backdrop-blur-sm'
+        : 'bg-transparent'
+        }`}>
 
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center">
             <div className="flex items-center space-x-2">
               <div className="h-10 w-10 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 flex items-center justify-center">
@@ -464,12 +465,11 @@ export default function EveBuzzLandingPage() {
                       <span>{event.minTeamParticipants}–{event.maxTeamParticipants} Participants</span>
                     </div>
                   </div>
-                  <a href={event.registrationLink} target="_blank" rel="noopener noreferrer">
-                    <button className="w-full py-2 bg-slate-100 text-amber-600 font-medium rounded-lg hover:bg-amber-500 hover:text-white transition-colors">
-                      Register Now
-                    </button>
-                  </a>
-                </div>
+                  <Link href={`/events/${event.id}`} className="flex-1">
+                    <Button className="w-full bg-slate-800 text-white hover:bg-slate-700">
+                      View Details
+                    </Button>
+                  </Link>                </div>
               </div>
             ))}
 
@@ -585,19 +585,19 @@ export default function EveBuzzLandingPage() {
             </div>
 
             <div>
-  <h3 className="text-lg font-bold mb-4">Quick Links</h3>
-  <ul className="space-y-2">
-    <li>
-      <a href="#" className="text-gray-400 hover:text-amber-500 transition-colors">Home</a>
-    </li>
-    <li>
-      <a href="#events" className="text-gray-400 hover:text-amber-500 transition-colors">Events</a>
-    </li>
-    <li>
-      <a href="#calendar" className="text-gray-400 hover:text-amber-500 transition-colors">Calendar</a>
-    </li>
-  </ul>
-</div>
+              <h3 className="text-lg font-bold mb-4">Quick Links</h3>
+              <ul className="space-y-2">
+                <li>
+                  <a href="#" className="text-gray-400 hover:text-amber-500 transition-colors">Home</a>
+                </li>
+                <li>
+                  <a href="#events" className="text-gray-400 hover:text-amber-500 transition-colors">Events</a>
+                </li>
+                <li>
+                  <a href="#calendar" className="text-gray-400 hover:text-amber-500 transition-colors">Calendar</a>
+                </li>
+              </ul>
+            </div>
 
             <div>
               <h3 className="text-lg font-bold mb-4">Resources</h3>
