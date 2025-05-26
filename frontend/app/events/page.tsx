@@ -81,6 +81,7 @@ const EventsList = () => {
       }
 
       const data = await response.json();
+      console.log("data", data);
       setEvents(data);
       setFilteredEvents(data);
     } catch (err) {
@@ -242,16 +243,16 @@ const EventsList = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-800 to-black">
       <div className="container mx-auto px-4 py-12">
-         {/* Back Button */}
-      <div className="mb-6">
-  <Link
-    href="/"
-    className="inline-flex items-center gap-2 font-semibold transition-colors bg-amber-500 text-black hover:bg-amber-400 rounded-lg px-4 py-2 shadow border-none"
-  >
-    <ChevronLeft className="h-5 w-5" />
-    Back to Home
-  </Link>
-</div>
+        {/* Back Button */}
+        <div className="mb-6">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 font-semibold transition-colors bg-amber-500 text-black hover:bg-amber-400 rounded-lg px-4 py-2 shadow border-none"
+          >
+            <ChevronLeft className="h-5 w-5" />
+            Back to Home
+          </Link>
+        </div>
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
           <div>
@@ -466,7 +467,7 @@ const EventsList = () => {
                           Registration Link
                         </Button>
                       </a>
-                      <Link href={`/event/${event.id}`} className="flex-1">
+                      <Link href={`/events/${event.id}`} className="flex-1">
                         <Button className="w-full bg-slate-800 text-white hover:bg-slate-700">
                           View Details
                         </Button>
