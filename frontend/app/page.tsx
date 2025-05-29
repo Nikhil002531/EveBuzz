@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Clock, MapPin, Users, ArrowRight, Search, Bell, User, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, MapPin, Users, ArrowRight, Search, Bell, Menu, X, Sparkles, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -36,6 +36,7 @@ export default function EveBuzzLandingPage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // Calendar state
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -276,37 +277,106 @@ export default function EveBuzzLandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-gray-800 to-black text-gray-900 flex flex-col">
       {/* Navigation */}
-      <nav className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled
-        ? 'bg-gradient-to-b from-black/95 via-black/50 to-transparent backdrop-blur-sm'
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ease-out ${isScrolled
+        ? 'bg-white/8 backdrop-blur-2xl shadow-lg'
         : 'bg-transparent'
         }`}>
+        {/* Remove the glow line completely */}
 
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="flex items-center space-x-2">
-              <div className="h-10 w-10 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 flex items-center justify-center">
-                <Bell className="h-6 w-6 text-white" />
+        <div className="max-w-7xl mx-auto px-6 py-3">
+          <div className="flex items-center justify-between">
+            {/* Enhanced Logo Section */}
+            <div className="flex items-center group">
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/50 to-amber-600/50 rounded-xl blur opacity-30 group-hover:opacity-60 transition-opacity duration-300"></div>
+                <div className="relative h-12 w-12 rounded-xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 flex items-center justify-center shadow-lg shadow-amber-500/25 group-hover:shadow-amber-500/40 transition-all duration-300 group-hover:scale-105">
+                  < Sparkles className="h-7 w-7 text-white drop-shadow-sm" />
+                  <div className="absolute -top-1 -right-1 h-3 w-3 bg-amber-300 rounded-full animate-pulse"></div>
+                </div>
               </div>
-              <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-amber-600">EveBuzz</span>
+              <div className="ml-4">
+                <span className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 drop-shadow-sm tracking-tight">
+                  EveBuzz
+                </span>
+                <div className="flex items-center mt-0.5">
+                  <Sparkles className="h-3 w-3 text-amber-400 mr-1" />
+                </div>
+              </div>
+            </div>
+
+            {/* Enhanced Navigation Links */}
+            <div className="hidden lg:flex items-center space-x-12">
+              {['Home', 'Events', 'Calendar'].map((item, index) => (
+                <a
+                  key={item}
+                  href={`#${item.toLowerCase()}`}
+                  className={`relative group transition-all duration-300 font-medium text-lg ${isScrolled
+                    ? 'text-amber-400 hover:text-white drop-shadow-sm'
+                    : 'text-gray-200 hover:text-white'
+                    }`}
+                >
+                  <span className="relative z-10">{item}</span>
+                  <div className="absolute -bottom-2 left-0 w-0 h-0.5 bg-gradient-to-r from-amber-500 to-amber-600 group-hover:w-full transition-all duration-300 rounded-full"></div>
+                  <div className={`absolute -inset-3 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm ${isScrolled ? 'bg-white/10' : 'bg-white/5'
+                    }`}></div>
+                </a>
+              ))}
+            </div>
+
+            {/* Enhanced Action Buttons */}
+            <div className="flex items-center space-x-4">
+              <button className="relative group px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-semibold text-sm tracking-wide shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 transition-all duration-300 hover:scale-105 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <span className="relative z-10">Sign In</span>
+              </button>
+
+              <button className="relative group px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-semibold text-sm tracking-wide shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 transition-all duration-300 hover:scale-105 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <span className="relative z-10">Register</span>
+                <div className="absolute -top-1 -right-1 h-2 w-2 bg-green-400 rounded-full animate-bounce"></div>
+              </button>
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="lg:hidden p-2 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10 text-white hover:bg-white/10 transition-all duration-300"
+              >
+                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
             </div>
           </div>
 
-          <div className="hidden md:flex items-center space-x-10">
-            <a href="#home" className="text-gray-200 hover:text-amber-500 transition-colors">Home</a>
-            <a href="#events" className="text-gray-200 hover:text-amber-500 transition-colors">Events</a>
-            <a href="#calendar" className="text-gray-200 hover:text-amber-500 transition-colors">Calendar</a>
-          </div>
-
-
-          <div className="flex items-center space-x-4">
-            <button className="px-4 py-2 rounded-md bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:opacity-90 transition-colors font-semibold">Sign In</button>
-            <button className="px-4 py-2 rounded-md bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:opacity-90 transition-colors font-semibold">Register</button>
-          </div>
+          {/* Enhanced Mobile Menu */}
+          {isMobileMenuOpen && (
+            <div className="lg:hidden absolute top-full left-0 right-0 bg-white/8 backdrop-blur-2xl shadow-lg">
+              <div className="px-6 py-4 space-y-2">
+                {['Home', 'Events', 'Calendar'].map((item) => (
+                  <a
+                    key={item}
+                    href={`#${item.toLowerCase()}`}
+                    className={`block py-2 px-4 rounded-lg transition-all duration-300 font-medium ${isScrolled
+                      ? 'text-gray-800 hover:text-black hover:bg-black/5'
+                      : 'text-gray-200 hover:text-white hover:bg-white/5'
+                      }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {item}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      </nav>
 
+        {/* Animated particles effect */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-1 h-1 bg-amber-400/30 rounded-full animate-pulse delay-1000"></div>
+          <div className="absolute top-2 right-1/3 w-0.5 h-0.5 bg-amber-500/40 rounded-full animate-pulse delay-2000"></div>
+          <div className="absolute bottom-1 left-1/2 w-0.5 h-0.5 bg-amber-300/20 rounded-full animate-pulse delay-3000"></div>
+        </div>
+      </nav >
       {/* Hero Section */}
-      <section className="pt-24 pb-20 md:pt-32 md:pb-24 px-4">
+      < section className="pt-24 pb-20 md:pt-32 md:pb-24 px-4" >
         <div className="container mx-auto">
           <div className="flex flex-col lg:flex-row items-center">
             <div className="lg:w-1/2 mb-10 lg:mb-0">
@@ -363,10 +433,10 @@ export default function EveBuzzLandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* Search and Filter Bar */}
-      <section className="py-8 px-4 bg-slate-800">
+      < section className="py-8 px-4 bg-slate-800" >
         <div className="container mx-auto">
           <div className="bg-white rounded-xl shadow-md p-4">
             <div className="flex flex-col md:flex-row gap-4">
@@ -400,11 +470,11 @@ export default function EveBuzzLandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section >
 
 
       {/* Featured Events */}
-      <section id="events" className="py-16 px-4 bg-gradient-to-b from-black to-slate-900">
+      < section id="events" className="py-16 px-4 bg-gradient-to-b from-black to-slate-900" >
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center mb-12">
             <div>
@@ -467,10 +537,10 @@ export default function EveBuzzLandingPage() {
             </Link>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* Events Calendar Section */}
-      <section id="calendar" className="py-16 px-4 bg-slate-800">
+      < section id="calendar" className="py-16 px-4 bg-slate-800" >
         <div className="container mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">Events Calendar</h2>
@@ -500,10 +570,10 @@ export default function EveBuzzLandingPage() {
             </div>1
           </div>
         </div>
-      </section>
+      </section >
 
       {/* How It Works */}
-      <section id='how-it-works' className="py-16 px-4 bg-black">
+      < section id='how-it-works' className="py-16 px-4 bg-black" >
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">How EveBuzz Works</h2>
@@ -543,11 +613,11 @@ export default function EveBuzzLandingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section >
 
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-white py-12 px-4">
+      < footer className="bg-slate-900 text-white py-12 px-4" >
         <div className="container mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
@@ -607,6 +677,6 @@ export default function EveBuzzLandingPage() {
             <p className="text-gray-500">© 2025 EveBuzz. All rights reserved.</p>
           </div>
         </div>
-      </footer>
-    </div>
+      </footer >
+    </div >
   );
