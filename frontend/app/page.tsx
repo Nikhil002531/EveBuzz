@@ -46,11 +46,25 @@ export default function EveBuzzLandingPage() {
 
   useEffect(() => {
     fetch('http://localhost:8000/api/events/')
-      .then((res) => res.json())
-      .then((data) => setUpcomingEvents(data))
-      .catch((err) => console.error('Failed to fetch events:', err));
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP status failed: ${res.status}`)
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setUpcomingEvents(data);
+        } else {
+          console.error('API response is not an array:', data);
+          setUpcomingEvents([]);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to fetch events:', err);
+        setUpcomingEvents([]);
+      });
   }, []);
-
 
   useEffect(() => {
     const handleScroll = () => {
