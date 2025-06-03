@@ -4,20 +4,33 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('api', '0003_rename_attendees_event_minteamparticipants_and_more'),
+        ("api", "0003_rename_attendees_event_minteamparticipants_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='event',
-            name='other_type_name',
-            field=models.CharField(blank=True, help_text="Specify if type is 'Others'", max_length=100, null=True),
+            model_name="event",
+            name="other_type_name",
+            field=models.CharField(
+                blank=True,
+                help_text="Specify if type is 'Others'",
+                max_length=100,
+                null=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='event',
-            name='type',
-            field=models.CharField(choices=[('hackathon', 'Hackathon'), ('cultural', 'Cultural'), ('sports', 'Sports'), ('others', 'Others')], default='hackathon', max_length=50),
+            model_name="event",
+            name="type",
+            field=models.CharField(
+                choices=[
+                    ("hackathon", "Hackathon"),
+                    ("cultural", "Cultural"),
+                    ("sports", "Sports"),
+                    ("others", "Others"),
+                ],
+                default="hackathon",
+                max_length=50,
+            ),
         ),
     ]

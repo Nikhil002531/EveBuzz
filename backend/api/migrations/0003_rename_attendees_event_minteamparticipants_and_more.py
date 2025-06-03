@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('api', '0002_remove_event_date_event_attendees_event_contact_info_and_more'),
+        ("api", "0002_remove_event_date_event_attendees_event_contact_info_and_more"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='event',
-            old_name='attendees',
-            new_name='minTeamParticipants',
+            model_name="event",
+            old_name="attendees",
+            new_name="minTeamParticipants",
         ),
         migrations.AddField(
-            model_name='event',
-            name='maxTeamParticipants',
+            model_name="event",
+            name="maxTeamParticipants",
             field=models.IntegerField(default=1),
         ),
     ]

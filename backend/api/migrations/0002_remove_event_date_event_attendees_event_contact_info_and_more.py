@@ -4,74 +4,75 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('api', '0001_initial'),
+        ("api", "0001_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='event',
-            name='date',
+            model_name="event",
+            name="date",
         ),
         migrations.AddField(
-            model_name='event',
-            name='attendees',
+            model_name="event",
+            name="attendees",
             field=models.IntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='event',
-            name='contact_info',
-            field=models.CharField(default='', max_length=100),
+            model_name="event",
+            name="contact_info",
+            field=models.CharField(default="", max_length=100),
         ),
         migrations.AddField(
-            model_name='event',
-            name='end_date',
+            model_name="event",
+            name="end_date",
             field=models.DateTimeField(default=None),
         ),
         migrations.AddField(
-            model_name='event',
-            name='image',
-            field=models.ImageField(default='events/images/default.jpg', upload_to='events/images/'),
+            model_name="event",
+            name="image",
+            field=models.ImageField(
+                default="events/images/default.jpg", upload_to="events/images/"
+            ),
         ),
         migrations.AddField(
-            model_name='event',
-            name='organizer',
-            field=models.CharField(default='', max_length=100),
+            model_name="event",
+            name="organizer",
+            field=models.CharField(default="", max_length=100),
         ),
         migrations.AddField(
-            model_name='event',
-            name='price',
+            model_name="event",
+            name="price",
             field=models.DecimalField(decimal_places=2, default=0.0, max_digits=10),
         ),
         migrations.AddField(
-            model_name='event',
-            name='registrationLink',
-            field=models.URLField(default=''),
+            model_name="event",
+            name="registrationLink",
+            field=models.URLField(default=""),
         ),
         migrations.AddField(
-            model_name='event',
-            name='start_date',
+            model_name="event",
+            name="start_date",
             field=models.DateTimeField(default=None),
         ),
         migrations.AddField(
-            model_name='event',
-            name='type',
-            field=models.CharField(default='', max_length=50),
+            model_name="event",
+            name="type",
+            field=models.CharField(default="", max_length=50),
         ),
         migrations.AlterField(
-            model_name='event',
-            name='description',
-            field=models.TextField(default=''),
+            model_name="event",
+            name="description",
+            field=models.TextField(default=""),
         ),
         migrations.AlterField(
-            model_name='event',
-            name='location',
-            field=models.CharField(default='', max_length=200),
+            model_name="event",
+            name="location",
+            field=models.CharField(default="", max_length=200),
         ),
         migrations.AlterField(
-            model_name='event',
-            name='title',
-            field=models.CharField(default='', max_length=100),
+            model_name="event",
+            name="title",
+            field=models.CharField(default="", max_length=100),
         ),
     ]
