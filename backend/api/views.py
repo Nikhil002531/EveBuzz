@@ -24,3 +24,4 @@ class CreatUserView(generics.CreateAPIView):
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
+    permission_classes = [IsAuthenticated]

@@ -1,10 +1,12 @@
 'use client'
 import { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Clock, MapPin, Users, ArrowLeft, Bell, User, Share2, ExternalLink, Mail, Phone, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, MapPin, Users, ArrowLeft, Bell, User, Share2, ExternalLink, Mail, Phone, DollarSign, ChevronLeft, ChevronRight, Loader2, CircleAlert } from 'lucide-react'; // Added Loader2 and CircleAlert
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button'; // Assuming you have a Button component
 
+// Event type definition
 type Event = {
   id: number;
   title: string;
@@ -24,6 +26,14 @@ type Event = {
   created_at: string;
 };
 
+// Helper function to check authentication status
+const isAuthenticated = (): boolean => {
+  if (typeof window !== 'undefined') {
+    return !!localStorage.getItem('access_token');
+  }
+  return false;
+};
+
 export default function EventDetailsPage() {
   const params = useParams();
   const router = useRouter();
@@ -32,7 +42,9 @@ export default function EventDetailsPage() {
   const [error, setError] = useState<string | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [relatedEvents, setRelatedEvents] = useState<Event[]>([]);
+  const [isAuthChecked, setIsAuthChecked] = useState(false); // State to track if auth check is done
 
+  // Effect for sticky navigation bar
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -41,35 +53,79 @@ export default function EventDetailsPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Effect to handle initial authentication check and redirection
   useEffect(() => {
-    const fetchEvent = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`http://localhost:8000/api/events/${params.id}/`);
-        if (!response.ok) {
-          throw new Error('Event not found');
-        }
-        const data = await response.json();
-        setEvent(data);
+    if (!isAuthenticated()) {
+      console.log('User not authenticated, redirecting to login from EventDetailsPage...');
+      router.replace('/login'); // Use replace to prevent going back after login
+    } else {
+      setIsAuthChecked(true); // Mark authentication check as complete only if authenticated
+    }
+  }, [router]);
 
-        // Fetch related events
-        const relatedResponse = await fetch(`http://localhost:8000/api/events/?type=${data.type}&limit=3`);
-        if (relatedResponse.ok) {
-          const relatedData = await relatedResponse.json();
-          setRelatedEvents(relatedData.filter((e: Event) => e.id !== data.id).slice(0, 3));
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch event');
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Effect to fetch event details and related events after auth check
+  useEffect(() => {
+    if (isAuthChecked && params.id) {
+      const fetchEvent = async () => {
+        try {
+          setLoading(true);
+          const accessToken = localStorage.getItem('access_token');
 
-    if (params.id) {
+          // This check is redundant if the useEffect above already redirected, but good for clarity/fallback
+          if (!accessToken) {
+            setError('Authentication token missing. Please log in.');
+            router.replace('/login');
+            return;
+          }
+
+          const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`, // INCLUDE THE JWT TOKEN HERE
+          };
+
+          // Fetch main event details
+          const response = await fetch(`http://localhost:8000/api/events/${params.id}/`, {
+            headers: headers,
+          });
+
+          if (response.status === 401 || response.status === 403) {
+            setError('Session expired or unauthorized. Please log in again.');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            router.push('/login');
+            return;
+          }
+
+          if (!response.ok) {
+            throw new Error('Event not found or failed to fetch');
+          }
+          const data = await response.json();
+          setEvent(data);
+
+          // Fetch related events (excluding the current event)
+          const relatedResponse = await fetch(`http://localhost:8000/api/events/?type=${data.type}`, {
+            headers: headers,
+          });
+          if (relatedResponse.ok) {
+            const relatedData = await relatedResponse.json();
+            setRelatedEvents(relatedData.filter((e: Event) => e.id !== data.id).slice(0, 3)); // Limit to 3 related events
+          } else {
+            console.warn('Failed to fetch related events:', relatedResponse.status);
+            setRelatedEvents([]);
+          }
+
+        } catch (err) {
+          console.error('Error fetching event details:', err);
+          setError(err instanceof Error ? err.message : 'Failed to fetch event details.');
+        } finally {
+          setLoading(false);
+        }
+      };
       fetchEvent();
     }
-  }, [params.id]);
+  }, [params.id, isAuthChecked, router]); // Dependencies for this effect
 
+  // Helper function to format date
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -79,6 +135,7 @@ export default function EventDetailsPage() {
     });
   };
 
+  // Helper function to format time
   const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString('en-US', {
       hour: '2-digit',
@@ -86,6 +143,7 @@ export default function EventDetailsPage() {
     });
   };
 
+  // Handle sharing event details
   const handleShare = async () => {
     if (navigator.share && event) {
       try {
@@ -98,20 +156,22 @@ export default function EventDetailsPage() {
         console.log('Error sharing:', err);
       }
     } else {
-      // Fallback to copying URL
-      navigator.clipboard.writeText(window.location.href);
-      // You could add a toast notification here
+      // Fallback to copying URL if Web Share API is not available
+      document.execCommand('copy'); // Use document.execCommand for clipboard in iframe
+      // You could add a custom message box here to indicate URL copied
     }
   };
 
+  // Add event to Google Calendar
   const addToCalendar = () => {
     if (!event) return;
 
     const startDate = new Date(event.start_date);
     const endDate = new Date(event.end_date);
 
+    // Format dates for Google Calendar URL (YYYYMMDDTHHMMSSZ)
     const formatDateForCalendar = (date: Date) => {
-      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      return date.toISOString().replace(/[-:]|\.\d{3}/g, '') + 'Z';
     };
 
     const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${formatDateForCalendar(startDate)}/${formatDateForCalendar(endDate)}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}`;
@@ -119,27 +179,55 @@ export default function EventDetailsPage() {
     window.open(calendarUrl, '_blank');
   };
 
-  if (loading) {
+  // Render event type badge
+  const renderEventTypeBadge = (type: string, otherTypeName?: string) => {
+    const displayType = type === 'others' && otherTypeName ? otherTypeName : type;
+    let badgeColor = 'bg-slate-100 text-slate-800'; // Default
+
+    switch (type.toLowerCase()) {
+      case 'hackathon': badgeColor = 'bg-blue-100 text-blue-800'; break;
+      case 'cultural': badgeColor = 'bg-purple-100 text-purple-800'; break;
+      case 'sports': badgeColor = 'bg-green-100 text-green-800'; break;
+      case 'workshop': badgeColor = 'bg-amber-100 text-amber-800'; break;
+      case 'seminar': badgeColor = 'bg-indigo-100 text-indigo-800'; break;
+      case 'competition': badgeColor = 'bg-red-100 text-red-800'; break;
+    }
+
+    return (
+      <span className={`${badgeColor} font-medium text-xs px-3 py-1 rounded-full capitalize`}>
+        {displayType}
+      </span>
+    );
+  };
+
+  // Show loading spinner if auth check is not done or data is still loading
+  if (!isAuthChecked || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-900 via-gray-800 to-black flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto mb-4"></div>
+          <Loader2 className="h-12 w-12 text-amber-500 animate-spin mx-auto mb-4" />
           <p className="text-gray-300">Loading event details...</p>
         </div>
       </div>
     );
   }
 
+  // Show error page if there's an error or event is null after loading
   if (error || !event) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-900 via-gray-800 to-black flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-white mb-4">Event Not Found</h1>
-          <p className="text-gray-300 mb-8">The event you're looking for doesn't exist or has been removed.</p>
+        <div className="text-center p-6 bg-white rounded-xl shadow-lg">
+          <CircleAlert className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-slate-800 mb-2">
+            {error ? "Error Loading Event" : "Event Not Found"}
+          </h1>
+          <p className="text-gray-600 mb-6">
+            {error || "The event you're looking for doesn't exist or has been removed."}
+          </p>
           <Link href="/events">
-            <button className="px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-black rounded-lg hover:opacity-90 transition-colors font-semibold">
+            <Button className="bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:from-amber-600 hover:to-amber-700">
               Back to Events
-            </button>
+            </Button>
           </Link>
         </div>
       </div>
@@ -169,14 +257,35 @@ export default function EventDetailsPage() {
             <a href="/#calendar" className="text-gray-200 hover:text-amber-500 transition-colors">Calendar</a>
           </div>
 
+          {/* Assuming login/logout status is handled by a parent component or context */}
+          {/* For simplicity, hardcoding buttons here, but ideally this would be dynamic */}
           <div className="flex items-center space-x-4">
-            <button className="hidden md:block px-4 py-2 rounded-md bg-slate-800 hover:bg-slate-700 text-white transition-colors">Sign In</button>
-            <button className="px-4 py-2 rounded-md bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:opacity-90 transition-colors font-semibold">Register</button>
+            {isAuthenticated() ? (
+              <Button
+                onClick={() => {
+                  localStorage.removeItem('access_token');
+                  localStorage.removeItem('refresh_token');
+                  router.push('/login');
+                }}
+                className="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white transition-colors font-semibold"
+              >
+                Logout
+              </Button>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button className="hidden md:block px-4 py-2 rounded-md bg-slate-800 hover:bg-slate-700 text-white transition-colors">Sign In</Button>
+                </Link>
+                <Link href="/register">
+                  <Button className="px-4 py-2 rounded-md bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:opacity-90 transition-colors font-semibold">Register</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
 
-      Breadcrumb
+      {/* Breadcrumb */}
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center space-x-2 text-sm">
           <Link href="/" className="text-gray-400 hover:text-amber-500 transition-colors">Home</Link>
@@ -187,7 +296,7 @@ export default function EventDetailsPage() {
         </div>
       </div>
 
-      Hero Section
+      {/* Hero Section */}
       <section className="relative">
         <div className="relative h-96 md:h-[500px] overflow-hidden">
           <Image
@@ -204,233 +313,153 @@ export default function EventDetailsPage() {
 
           {/* Event Type Badge */}
           <div className="absolute top-6 left-6">
-            <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-semibold text-slate-800">
-              {event.type === "others" ? event.other_type_name : event.type}
-            </div>
+            {renderEventTypeBadge(event.type, event.other_type_name)}
           </div>
 
           {/* Share Button */}
           <div className="absolute top-6 right-6">
-            <button
+            <Button
               onClick={handleShare}
               className="bg-white/90 backdrop-blur-sm p-3 rounded-full hover:bg-white transition-colors"
+              size="icon"
             >
               <Share2 className="h-5 w-5 text-slate-700" />
-            </button>
+            </Button>
           </div>
 
           {/* Event Title Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-            <div className="container mx-auto">
-              <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">{event.title}</h1>
-              <div className="flex flex-wrap items-center gap-6 text-gray-200">
-                <div className="flex items-center">
-                  <CalendarIcon className="h-5 w-5 mr-2" />
-                  <span>{formatDate(event.start_date)}</span>
-                </div>
-                <div className="flex items-center">
-                  <MapPin className="h-5 w-5 mr-2" />
-                  <span>{event.location}</span>
-                </div>
-                <div className="flex items-center">
-                  <DollarSign className="h-5 w-5 mr-2" />
-                  <span>{event.price == "0.00" ? "Free" : `₹${event.price}`}</span>
-                </div>
-              </div>
-            </div>
+          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-white">
+            <h1 className="text-3xl md:text-5xl font-bold mb-2 leading-tight">
+              {event.title}
+            </h1>
+            <p className="text-lg md:text-xl text-gray-300 flex items-center gap-2">
+              <MapPin className="h-5 w-5" /> {event.location}
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Main Content */}
-      <section className="py-12 px-4">
-        <div className="container mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            {/* Main Content */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Event Details */}
-              <div className="bg-white rounded-xl shadow-lg p-8">
-                <h2 className="text-2xl font-bold text-slate-800 mb-6">Event Details</h2>
+      {/* Event Details Section */}
+      <section className="container mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div className="lg:col-span-2">
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">About the Event</h2>
+          <p className="text-gray-300 leading-relaxed mb-8">{event.description}</p>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                  <div className="space-y-4">
-                    <div className="flex items-center">
-                      <CalendarIcon className="h-5 w-5 text-amber-500 mr-3" />
-                      <div>
-                        <p className="font-medium text-slate-800">Start Date</p>
-                        <p className="text-gray-600">{formatDate(event.start_date)}</p>
-                        <p className="text-sm text-gray-500">{formatTime(event.start_date)}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center">
-                      <Clock className="h-5 w-5 text-amber-500 mr-3" />
-                      <div>
-                        <p className="font-medium text-slate-800">End Date</p>
-                        <p className="text-gray-600">{formatDate(event.end_date)}</p>
-                        <p className="text-sm text-gray-500">{formatTime(event.end_date)}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center">
-                      <MapPin className="h-5 w-5 text-amber-500 mr-3" />
-                      <div>
-                        <p className="font-medium text-slate-800">Location</p>
-                        <p className="text-gray-600">{event.location}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center">
-                      <Users className="h-5 w-5 text-amber-500 mr-3" />
-                      <div>
-                        <p className="font-medium text-slate-800">Team Size</p>
-                        <p className="text-gray-600">{event.minTeamParticipants}–{event.maxTeamParticipants} Participants</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border-t pt-6">
-                  <h3 className="text-xl font-bold text-slate-800 mb-4">Description</h3>
-                  <div className="prose prose-gray max-w-none">
-                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{event.description}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Organizer Information */}
-              <div className="bg-white rounded-xl shadow-lg p-8">
-                <h2 className="text-2xl font-bold text-slate-800 mb-6">Organizer Information</h2>
-
-                <div className="flex items-start space-x-4">
-                  <div className="h-16 w-16 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 flex items-center justify-center">
-                    <User className="h-8 w-8 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-slate-800 mb-2">{event.organizer}</h3>
-                    <div className="space-y-2">
-                      <div className="flex items-center text-gray-600">
-                        <Mail className="h-4 w-4 mr-2" />
-                        <span>{event.contact_info}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="bg-white/5 p-6 rounded-lg shadow-inner flex items-center gap-4">
+              <CalendarIcon className="h-8 w-8 text-amber-500" />
+              <div>
+                <p className="text-gray-400 text-sm">Date</p>
+                <p className="font-semibold text-white">{formatDate(event.start_date)}</p>
+                {event.start_date !== event.end_date && (
+                  <p className="text-gray-400 text-sm">to {formatDate(event.end_date)}</p>
+                )}
               </div>
             </div>
+            <div className="bg-white/5 p-6 rounded-lg shadow-inner flex items-center gap-4">
+              <Clock className="h-8 w-8 text-amber-500" />
+              <div>
+                <p className="text-gray-400 text-sm">Time</p>
+                <p className="font-semibold text-white">{formatTime(event.start_date)} - {formatTime(event.end_date)}</p>
+              </div>
+            </div>
+            <div className="bg-white/5 p-6 rounded-lg shadow-inner flex items-center gap-4">
+              <Users className="h-8 w-8 text-amber-500" />
+              <div>
+                <p className="text-gray-400 text-sm">Participants</p>
+                <p className="font-semibold text-white">{event.minTeamParticipants} - {event.maxTeamParticipants} Team Members</p>
+              </div>
+            </div>
+            <div className="bg-white/5 p-6 rounded-lg shadow-inner flex items-center gap-4">
+              <DollarSign className="h-8 w-8 text-amber-500" />
+              <div>
+                <p className="text-gray-400 text-sm">Price</p>
+                <p className="font-semibold text-white">{event.price === '0' ? 'Free' : `$${event.price}`}</p>
+              </div>
+            </div>
+          </div>
 
-            {/* Sidebar */}
+          <h3 className="text-2xl font-bold text-white mb-4">Organizer Details</h3>
+          <div className="bg-white/5 p-6 rounded-lg shadow-inner mb-8">
+            <p className="text-gray-400 text-sm">Organizer</p>
+            <p className="font-semibold text-white text-lg mb-2">{event.organizer}</p>
+            <div className="flex items-center gap-4 text-gray-300">
+              {event.contact_info.includes('@') && (
+                <a href={`mailto:${event.contact_info}`} className="flex items-center gap-1 hover:text-amber-500 transition-colors">
+                  <Mail className="h-4 w-4" /> Email
+                </a>
+              )}
+              {!event.contact_info.includes('@') && (
+                <a href={`tel:${event.contact_info}`} className="flex items-center gap-1 hover:text-amber-500 transition-colors">
+                  <Phone className="h-4 w-4" /> Call
+                </a>
+              )}
+            </div>
+          </div>
+
+          {event.registrationLink && (
+            <div className="mb-8">
+              <a href={event.registrationLink} target="_blank" rel="noopener noreferrer">
+                <Button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:from-amber-600 hover:to-amber-700 py-3 text-lg font-semibold">
+                  Register Now <ExternalLink className="ml-2 h-5 w-5" />
+                </Button>
+              </a>
+            </div>
+          )}
+
+          <div className="mt-8">
+            <Button
+              onClick={addToCalendar}
+              variant="outline"
+              className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white py-3 text-lg font-semibold"
+            >
+              Add to Google Calendar <CalendarIcon className="ml-2 h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Related Events Sidebar */}
+        <div className="lg:col-span-1">
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">Related Events</h2>
+          {relatedEvents.length > 0 ? (
             <div className="space-y-6">
-              {/* Registration Card */}
-              <div className="bg-white rounded-xl shadow-lg p-6 sticky top-24">
-                <div className="text-center mb-6">
-                  <div className="text-3xl font-bold text-slate-800 mb-2">
-                    {event.price == "0.00" ? "Free" : `₹${event.price}`}
-                  </div>
-                  <p className="text-gray-600">Registration Fee</p>
-                </div>
-
-                <div className="space-y-4">
-                  <a href={event.registrationLink} target="_blank" rel="noopener noreferrer">
-                    <button className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-black font-semibold rounded-lg hover:opacity-90 transition-colors flex items-center justify-center">
-                      Register Now <ExternalLink className="ml-2 h-4 w-4" />
-                    </button>
-                  </a>
-
-                  <button
-                    onClick={addToCalendar}
-                    className="mt-2 w-full py-3 border border-amber-500 text-amber-600 font-medium rounded-lg hover:bg-amber-50 transition-colors"
-                  >
-                    Add to Calendar
-                  </button>
-                </div>
-
-                <div className="mt-6 pt-6 border-t">
-                  <h4 className="font-semibold text-slate-800 mb-3">Quick Info</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Event Type:</span>
-                      <span className="font-medium">{event.type === "others" ? event.other_type_name : event.type}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Team Size:</span>
-                      <span className="font-medium">{event.minTeamParticipants}–{event.maxTeamParticipants}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Duration:</span>
-                      <span className="font-medium">
-                        {Math.ceil((new Date(event.end_date).getTime() - new Date(event.start_date).getTime()) / (1000 * 60 * 60 * 24))} days
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Back to Events */}
-              <div className="bg-slate-800 rounded-xl p-6">
-                <Link href="/events">
-                  <button className="w-full flex items-center justify-center py-3 text-white hover:text-amber-500 transition-colors">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to All Events
-                  </button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Related Events */}
-      {relatedEvents.length > 0 && (
-        <section className="py-16 px-4 bg-slate-800">
-          <div className="container mx-auto">
-            <h2 className="text-3xl font-bold text-white mb-8">Related Events</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {relatedEvents.map(relatedEvent => (
-                <Link key={relatedEvent.id} href={`/events/${relatedEvent.id}`}>
-                  <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow group cursor-pointer">
-                    <div className="relative">
-                      <Image
-                        src={
-                          relatedEvent.image.startsWith('http')
-                            ? relatedEvent.image
-                            : `http://localhost:8000/media/${relatedEvent.image.replace(/^\/?media\//, '')}`
-                        }
-                        alt={relatedEvent.title}
-                        width={400}
-                        height={192}
-                        className="w-full h-48 object-cover"
-                      />
-                      <div className="absolute top-4 left-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
-                        {relatedEvent.type === "others" ? relatedEvent.other_type_name : relatedEvent.type}
-                      </div>
-                    </div>
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold mb-2 group-hover:text-amber-500 transition-colors">{relatedEvent.title}</h3>
-                      <div className="space-y-2">
-                        <div className="flex items-center text-gray-600">
-                          <CalendarIcon className="h-4 w-4 mr-2" />
-                          <span>{formatDate(relatedEvent.start_date)}</span>
-                        </div>
-                        <div className="flex items-center text-gray-600">
-                          <MapPin className="h-4 w-4 mr-2" />
-                          <span>{relatedEvent.location}</span>
-                        </div>
-                      </div>
+                <Link href={`/events/${relatedEvent.id}`} key={relatedEvent.id}>
+                  <div className="bg-white/5 rounded-lg overflow-hidden shadow-inner flex items-center gap-4 p-4 hover:bg-white/10 transition-colors">
+                    <Image
+                      src={
+                        relatedEvent.image.startsWith('http')
+                          ? relatedEvent.image
+                          : `http://localhost:8000/media/${relatedEvent.image.replace(/^\/?media\//, '')}`
+                      }
+                      alt={relatedEvent.title}
+                      width={80}
+                      height={80}
+                      className="rounded-md object-cover flex-shrink-0"
+                    />
+                    <div>
+                      <h4 className="font-semibold text-white text-lg">{relatedEvent.title}</h4>
+                      <p className="text-gray-400 text-sm flex items-center gap-1">
+                        <CalendarIcon className="h-3 w-3" /> {formatDate(relatedEvent.start_date)}
+                      </p>
+                      <p className="text-gray-400 text-sm flex items-center gap-1">
+                        <MapPin className="h-3 w-3" /> {relatedEvent.location}
+                      </p>
                     </div>
                   </div>
                 </Link>
               ))}
             </div>
-          </div>
-        </section>
-      )}
+          ) : (
+            <div className="bg-white/5 p-6 rounded-lg text-center text-gray-400">
+              No related events found.
+            </div>
+          )}
+        </div>
+      </section>
 
-      {/* Footer */}
-      <footer className="bg-slate-900 text-white py-12 px-4">
+      {/* Footer (copied from landing page for consistency) */}
+      <footer className="bg-slate-900 text-white py-12 px-4 mt-12">
         <div className="container mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
@@ -443,14 +472,26 @@ export default function EventDetailsPage() {
               <p className="text-gray-400 mb-4">
                 Connecting students with college events happening in their region.
               </p>
+              <div className="flex space-x-4">
+                {/* Social media icons would go here */}
+                <div className="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center"></div>
+                <div className="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center"></div>
+                <div className="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center"></div>
+              </div>
             </div>
 
             <div>
               <h3 className="text-lg font-bold mb-4">Quick Links</h3>
               <ul className="space-y-2">
-                <li><Link href="/" className="text-gray-400 hover:text-amber-500 transition-colors">Home</Link></li>
-                <li><Link href="/events" className="text-gray-400 hover:text-amber-500 transition-colors">Events</Link></li>
-                <li><a href="/#calendar" className="text-gray-400 hover:text-amber-500 transition-colors">Calendar</a></li>
+                <li>
+                  <a href="#" className="text-gray-400 hover:text-amber-500 transition-colors">Home</a>
+                </li>
+                <li>
+                  <a href="#events" className="text-gray-400 hover:text-amber-500 transition-colors">Events</a>
+                </li>
+                <li>
+                  <a href="#calendar" className="text-gray-400 hover:text-amber-500 transition-colors">Calendar</a>
+                </li>
               </ul>
             </div>
 
@@ -460,6 +501,7 @@ export default function EventDetailsPage() {
                 <li><a href="#" className="text-gray-400 hover:text-amber-500 transition-colors">FAQ</a></li>
                 <li><a href="#" className="text-gray-400 hover:text-amber-500 transition-colors">How It Works</a></li>
                 <li><a href="#" className="text-gray-400 hover:text-amber-500 transition-colors">Privacy Policy</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-amber-500 transition-colors">Terms of Service</a></li>
               </ul>
             </div>
 
@@ -468,6 +510,7 @@ export default function EventDetailsPage() {
               <ul className="space-y-2">
                 <li className="text-gray-400">support@evebuzz.com</li>
                 <li className="text-gray-400">+91 1234567890</li>
+                <li className="text-gray-400">Dayananda Sagar Academy of Technology and Management, Bengaluru</li>
               </ul>
             </div>
           </div>

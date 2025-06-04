@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Calendar as CalendarIcon,
   Search,
@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -31,29 +31,40 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image'; // Import Image component
 
 // Event type definition
-type Event = {
-  id: number;
-  title: string;
-  type: string;
-  other_type_name?: string;
-  image: string;
-  description: string;
-  minTeamParticipants: number;
-  maxTeamParticipants: number;
-  location: string;
-  start_date: string;
-  end_date: string;
-  price: string;
-  organizer: string;
-  contact_info: string;
-  registrationLink: string;
-};
+type Event =
+  {
+    id: number;
+    title: string;
+    type: string;
+    other_type_name?: string;
+    image: string;
+    description: string;
+    minTeamParticipants: number;
+    maxTeamParticipants: number;
+    location: string;
+    start_date: string;
+    end_date: string;
+    price: string;
+    organizer: string;
+    contact_info: string;
+    registrationLink: string;
+  };
 
 const eventTypes = ["Hackathon", "Cultural", "Sports", "Workshop", "Seminar", "Competition", "Others"];
 
-const EventsList = () => {
+// Helper function to check authentication status
+const isAuthenticated = (): boolean => {
+  if (typeof window !== 'undefined') {
+    return !!localStorage.getItem('access_token');
+  }
+  return false;
+};
+
+export default function EventsListPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,23 +76,61 @@ const EventsList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
+  const [isAuthChecked, setIsAuthChecked] = useState(false); // State to track if auth check is done
 
   const eventsPerPage = 6;
+  const router = useRouter();
 
-  // Fetch events
-  const fetchEvents = async () => {
+  // Effect to handle initial authentication check and redirection
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      console.log('User not authenticated, redirecting to login from EventsList...');
+      router.replace('/login'); // Use replace to prevent going back to /events after login
+    } else {
+      setIsAuthChecked(true); // Mark authentication check as complete only if authenticated
+    }
+  }, [router]);
+
+  // Fetch events using useCallback to memoize the function
+  const fetchEvents = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
+    const accessToken = localStorage.getItem('access_token');
+    console.log('EventsList: Access Token from localStorage (inside fetchEvents):', accessToken);
+
+    if (!accessToken) {
+      // This case should ideally be caught by the useEffect above, but serves as a fallback
+      setError('Authentication token missing. Please log in.');
+      setIsLoading(false);
+      router.push('/login');
+      return;
+    }
+
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    };
+
     try {
-      const response = await fetch('http://localhost:8000/api/events/');
+      const response = await fetch('http://localhost:8000/api/events/', {
+        headers: headers,
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        setError('Session expired or unauthorized. Please log in again.');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        router.push('/login');
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(`Failed to fetch events: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("data", data);
+      console.log("Fetched events data:", data);
       setEvents(data);
       setFilteredEvents(data);
     } catch (err) {
@@ -90,12 +139,14 @@ const EventsList = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [router]); // Added router to the dependency array
 
-  // Initial fetch
+  // Initial fetch - now depends on isAuthChecked
   useEffect(() => {
-    fetchEvents();
-  }, []);
+    if (isAuthChecked) { // Only fetch if authentication check has completed
+      fetchEvents();
+    }
+  }, [isAuthChecked, fetchEvents]); // fetchEvents is now a dependency because it's memoized with useCallback
 
   // Filter and sort events
   useEffect(() => {
@@ -151,11 +202,31 @@ const EventsList = () => {
   // Delete event handler
   const handleDeleteEvent = async (id: number) => {
     try {
+      const accessToken = localStorage.getItem('access_token');
+      if (!accessToken) {
+        setError('Authentication token missing. Please log in.');
+        router.push('/login');
+        return;
+      }
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      };
+
       const response = await fetch(`http://localhost:8000/api/events/${id}/`, {
         method: 'DELETE',
+        headers: headers, // Ensure headers are passed for DELETE too
       });
 
       if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          setError('Session expired or unauthorized. Please log in again.');
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          router.push('/login');
+          return;
+        }
         throw new Error(`Failed to delete event: ${response.status}`);
       }
 
@@ -229,12 +300,32 @@ const EventsList = () => {
     );
   };
 
-  if (isLoading) {
+  // Render loading state only if authentication check is complete and data is still loading
+  if (!isAuthChecked || isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-800 to-black flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-12 w-12 text-amber-500 animate-spin mx-auto mb-4" />
           <p className="text-white text-lg">Loading events...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If authentication check is complete and there's an error (e.g., unauthorized)
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-800 to-black flex items-center justify-center">
+        <div className="text-center p-6 bg-white rounded-xl shadow-lg">
+          <CircleAlert className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-slate-800 mb-2">Authentication Error</h1>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <Button
+            onClick={() => router.push('/login')}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            Go to Login
+          </Button>
         </div>
       </div>
     );
@@ -284,22 +375,6 @@ const EventsList = () => {
         </div>
 
         {/* Alert messages */}
-        {error && (
-          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded flex items-start">
-            <CircleAlert className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="font-medium">Error</p>
-              <p>{error}</p>
-            </div>
-            <button
-              onClick={() => setError(null)}
-              className="ml-auto text-red-500 hover:text-red-700"
-            >
-              &times;
-            </button>
-          </div>
-        )}
-
         {deleteSuccess && (
           <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded flex items-start">
             <CheckCircle2 className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
@@ -372,7 +447,7 @@ const EventsList = () => {
                 ? "No events match your current filters. Try adjusting your search criteria."
                 : "You haven't registered any events yet. Click the button below to add your first event."}
             </p>
-            <Link href="/add-event">
+            <Link href="/form">
               <Button className="bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:from-amber-600 hover:to-amber-700">
                 + Add New Event
               </Button>
@@ -384,10 +459,11 @@ const EventsList = () => {
               {currentEvents.map(event => (
                 <Card key={event.id} className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow group">
                   <div className="relative h-48">
-                    <img
+                    <Image
                       src={getImageUrl(event.image)}
                       alt={event.title}
-                      className="w-full h-full object-cover"
+                      fill // Use fill for responsive images
+                      className="object-cover"
                     />
                     <div className="absolute top-4 left-4">
                       {renderEventTypeBadge(event.type, event.other_type_name)}
@@ -543,6 +619,5 @@ const EventsList = () => {
       </div>
     </div>
   );
-};
+}
 
-export default EventsList;

@@ -1,55 +1,147 @@
 'use client'
 import { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Clock, MapPin, Users, ArrowRight, Search, Bell, User, ChevronLeft, ChevronRight } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
-
 import { Button } from '@/components/ui/button';
-
-
+import { useRouter } from 'next/navigation'; // Correct import for App Router
 
 // Sample event data
-type Event = {
-  id: number;
-  title: string;
-  type: string;
-  other_type_name?: string;
-  image: string;
-  description: string;
-  minTeamParticipants: number;
-  maxTeamParticipants: number;
-  location: string;
-  start_date: string;
-  end_date: string;
-  price: string;
-  organizer: string;
-  contact_info: string;
-  registrationLink: string;
-};
+type Event =
+  {
+    id: number;
+    title: string;
+    type: string;
+    other_type_name?: string;
+    image: string;
+    description: string;
+    minTeamParticipants: number;
+    maxTeamParticipants: number;
+    location: string;
+    start_date: string;
+    end_date: string;
+    price: string;
+    organizer: string;
+    contact_info: string;
+    registrationLink: string;
+  };
 
 const eventTypes = ["Hackathon", "Cultural", "Sports", "Workshop", "Seminar", "Competition", "Others"];
 
-
-
 export default function EveBuzzLandingPage() {
+  const router = useRouter(); // Access router inside the component
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
 
   // Calendar state
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [eventsForSelectedDate, setEventsForSelectedDate] = useState([]);
+  const [eventsForSelectedDate, setEventsForSelectedDate] = useState<Event[]>([]); // Explicitly type as Event[]
 
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // State to track login status
 
+  // Removed handleEvent as it had a syntax error and Link handles navigation
+  // const handleEvent = async (e) => {
+  //   e.prevent // This is a syntax error, should be e.preventDefault()
+  //   router.push("/events")
+  // }
+
+  // Function to check authentication status
+  const checkAuthStatus = () => {
+    if (typeof window !== 'undefined') {
+      return !!localStorage.getItem('access_token');
+    }
+    return false;
+  };
+
+  // Effect to set initial login status and listen for storage changes
   useEffect(() => {
-    fetch('http://localhost:8000/api/events/')
-      .then((res) => res.json())
-      .then((data) => setUpcomingEvents(data))
-      .catch((err) => console.error('Failed to fetch events:', err));
-  }, []);
+    setIsLoggedIn(checkAuthStatus());
 
+    const handleStorageChange = () => {
+      setIsLoggedIn(checkAuthStatus());
+    };
+
+    // Listen for changes in localStorage from other tabs/windows
+    // This ensures the login status updates if a user logs in/out in another tab
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []); // Run once on mount
+
+  // Handlers for Sign In and Register buttons
+  const handleSignInClick = () => {
+    router.push('/login'); // Redirects to the /login page
+  };
+
+  const handleRegisterClick = () => {
+    router.push('/register'); // Redirects to the /register page
+  };
+
+  // Handler for Logout button
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('access_token');    // Clear the access token
+      localStorage.removeItem('refresh_token');   // Clear the refresh token
+      setIsLoggedIn(false);                     // Update the component's state to reflect logout
+      router.push('/login');                    // Redirect to the login page after logout
+    }
+  };
+
+  // Fetch upcoming events with Authorization header
+  useEffect(() => {
+    const fetchUpcomingEvents = async () => {
+      const accessToken = localStorage.getItem('access_token');
+      console.log('Landing Page: Access Token from localStorage (for upcoming events):', accessToken); // Debugging log
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+
+      try {
+        const response = await fetch('http://localhost:8000/api/events/', {
+          headers: headers, // Pass the headers here
+        });
+
+        if (!response.ok) {
+          // If 401 or 403, it means unauthorized access.
+          // For the landing page, we might just want to show a message or
+          // fallback to public content, rather than redirecting immediately,
+          // as some content might be public.
+          // However, if all events are protected, then a 401 is expected if not logged in.
+          console.error(`HTTP status failed: ${response.status}`);
+          // If you want to handle 401/403 by clearing tokens and potentially redirecting
+          // (e.g., if the landing page *must* show protected content), you can uncomment:
+          // if (response.status === 401 || response.status === 403) {
+          //   localStorage.removeItem('access_token');
+          //   localStorage.removeItem('refresh_token');
+          //   router.push('/login');
+          // }
+          throw new Error(`Failed to fetch events: ${response.status}`);
+        }
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setUpcomingEvents(data);
+        } else {
+          console.error('API response is not an array:', data);
+          setUpcomingEvents([]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch events on landing page:', err);
+        setUpcomingEvents([]); // Ensure events are cleared on error
+      }
+    };
+
+    fetchUpcomingEvents();
+  }, []); // Empty dependency array means it runs once on mount
 
   useEffect(() => {
     const handleScroll = () => {
@@ -106,17 +198,17 @@ export default function EveBuzzLandingPage() {
   };
 
   // Get days in month
-  const getDaysInMonth = (year, month) => {
+  const getDaysInMonth = (year: number, month: number) => {
     return new Date(year, month + 1, 0).getDate();
   };
 
   // Get first day of month (0 = Sunday, 1 = Monday, etc.)
-  const getFirstDayOfMonth = (year, month) => {
+  const getFirstDayOfMonth = (year: number, month: number) => {
     return new Date(year, month, 1).getDay();
   };
 
   // Check if a date has events
-  const hasEvents = (date) => {
+  const hasEvents = (date: Date) => {
     return upcomingEvents.some(event => {
       const eventStartDate = new Date(event.start_date);
       const eventEndDate = new Date(event.end_date);
@@ -134,7 +226,7 @@ export default function EveBuzzLandingPage() {
   };
 
   // Get events for selected date
-  const getEventsForDate = (date) => {
+  const getEventsForDate = (date: Date) => {
     return upcomingEvents.filter(event => {
       const eventStartDate = new Date(event.start_date);
       const eventEndDate = new Date(event.end_date);
@@ -152,7 +244,7 @@ export default function EveBuzzLandingPage() {
   };
 
   // Handle date click
-  const handleDateClick = (date) => {
+  const handleDateClick = (date: Date) => {
     setSelectedDate(date);
     const dateEvents = getEventsForDate(date);
     setEventsForSelectedDate(dateEvents);
@@ -260,7 +352,8 @@ export default function EveBuzzLandingPage() {
                 </div>
                 <div className="flex items-center">
                   <Users className="h-3 w-3 mr-1" />
-                  <span>{event.attendees} Attending</span>
+                  {/* Assuming 'attendees' field exists or deriving it */}
+                  <span> Attending</span> {/* Removed event.attendees placeholder */}
                 </div>
                 <div className="mt-2">
                   <span className="inline-block px-2 py-1 bg-amber-100 text-xs rounded-full text-amber-800">{event.type}</span>
@@ -299,8 +392,29 @@ export default function EveBuzzLandingPage() {
 
 
           <div className="flex items-center space-x-4">
-            <button className="hidden md:block px-4 py-2 rounded-md bg-slate-800 hover:bg-slate-700 text-white transition-colors">Sign In</button>
-            <button className="px-4 py-2 rounded-md bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:opacity-90 transition-colors font-semibold">Register</button>
+            {isLoggedIn ? (
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white transition-colors font-semibold"
+              >
+                Logout
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={handleSignInClick}
+                  className="hidden md:block px-4 py-2 rounded-md bg-slate-800 hover:bg-slate-700 text-white transition-colors"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={handleRegisterClick}
+                  className="px-4 py-2 rounded-md bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:opacity-90 transition-colors font-semibold"
+                >
+                  Register
+                </button>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -460,7 +574,8 @@ export default function EveBuzzLandingPage() {
           </div>
 
           <div className="text-center mt-12">
-            <Link href="\events">
+            {/* Changed from button with handleEvent to Link directly */}
+            <Link href="/events">
               <button className="px-8 py-3 border border-amber-500 text-amber-500 rounded-lg hover:bg-slate-800 transition-colors">
                 View All Events
               </button>
@@ -497,7 +612,7 @@ export default function EveBuzzLandingPage() {
 
             <div className="lg:col-span-2">
               {renderEventsForSelectedDate()}
-            </div>1
+            </div>
           </div>
         </div>
       </section>
@@ -609,4 +724,6 @@ export default function EveBuzzLandingPage() {
         </div>
       </footer>
     </div>
-  );
+  )
+}
+;
