@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Clock, MapPin, Users, ArrowLeft, Bell, User, Share2, ExternalLink, Mail, Phone, DollarSign, ChevronLeft, ChevronRight, Loader2, CircleAlert } from 'lucide-react'; // Added Loader2 and CircleAlert
+import { Calendar as CalendarIcon, Clock, MapPin, Users, ArrowLeft, Bell, User, Sparkles, Share2, ExternalLink, Mail, Phone, DollarSign, ChevronLeft, ChevronRight, Loader2, CircleAlert } from 'lucide-react'; // Added Loader2 and CircleAlert
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
@@ -237,67 +237,89 @@ export default function EventDetailsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-gray-800 to-black text-gray-900">
       {/* Navigation */}
-      <nav className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled
-        ? 'bg-gradient-to-b from-black/95 via-black/50 to-transparent backdrop-blur-sm'
-        : 'bg-transparent'
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ease-out ${isScrolled
+        ? 'bg-white/8 backdrop-blur-2xl shadow-lg'
+        : 'bg-gradient-to-b from-black/100 to-black/10'
         }`}>
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="h-10 w-10 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 flex items-center justify-center">
-                <Bell className="h-6 w-6 text-white" />
+        {/* Remove the glow line completely */}
+
+        <div className="max-w-7xl mx-auto px-6 py-3">
+          <div className="flex items-center justify-between">
+            {/* Enhanced Logo Section */}
+            <div className="flex items-center group">
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/50 to-amber-600/50 rounded-xl blur opacity-30 group-hover:opacity-60 transition-opacity duration-300"></div>
+                <div className="relative h-12 w-12 rounded-xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 flex items-center justify-center shadow-lg shadow-amber-500/25 group-hover:shadow-amber-500/40 transition-all duration-300 group-hover:scale-105">
+                  < Sparkles className="h-7 w-7 text-white drop-shadow-sm" />
+                  <div className="absolute -top-1 -right-1 h-3 w-3 bg-amber-300 rounded-full animate-pulse"></div>
+                </div>
               </div>
-              <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-amber-600">EveBuzz</span>
-            </Link>
-          </div>
+              <div className="ml-4">
+                <span className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 drop-shadow-sm tracking-tight">
+                  EveBuzz
+                </span>
+                <div className="flex items-center mt-0.5">
+                  <Sparkles className="h-3 w-3 text-amber-400 mr-1" />
+                </div>
+              </div>
+            </div>
 
-          <div className="hidden md:flex items-center space-x-10">
-            <Link href="/" className="text-gray-200 hover:text-amber-500 transition-colors">Home</Link>
-            <Link href="/events" className="text-amber-500 font-semibold">Events</Link>
-            <a href="/#calendar" className="text-gray-200 hover:text-amber-500 transition-colors">Calendar</a>
-          </div>
+            {/* Enhanced Navigation Links */}
+            <div className="hidden lg:flex items-center space-x-12">
+              {['Home', 'Events', 'Calendar'].map((item, index) => (
+                <a
+                  key={item}
+                  href={`#${item.toLowerCase()}`}
+                  className={`relative group transition-all duration-300 font-medium text-lg ${isScrolled
+                    ? 'text-amber-400 hover:text-white drop-shadow-sm'
+                    : 'text-gray-200 hover:text-white'
+                    }`}
+                >
+                  <span className="relative z-10">{item}</span>
+                  <div className="absolute -bottom-2 left-0 w-0 h-0.5 bg-gradient-to-r from-amber-500 to-amber-600 group-hover:w-full transition-all duration-300 rounded-full"></div>
+                  <div className={`absolute -inset-3 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm ${isScrolled ? 'bg-white/10' : 'bg-white/5'
+                    }`}></div>
+                </a>
+              ))}
+            </div>
 
-          {/* Assuming login/logout status is handled by a parent component or context */}
-          {/* For simplicity, hardcoding buttons here, but ideally this would be dynamic */}
-          <div className="flex items-center space-x-4">
-            {isAuthenticated() ? (
-              <Button
-                onClick={() => {
-                  localStorage.removeItem('access_token');
-                  localStorage.removeItem('refresh_token');
-                  router.push('/login');
-                }}
-                className="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white transition-colors font-semibold"
-              >
-                Logout
-              </Button>
-            ) : (
-              <>
-                <Link href="/login">
-                  <Button className="hidden md:block px-4 py-2 rounded-md bg-slate-800 hover:bg-slate-700 text-white transition-colors">Sign In</Button>
-                </Link>
-                <Link href="/register">
-                  <Button className="px-4 py-2 rounded-md bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:opacity-90 transition-colors font-semibold">Register</Button>
-                </Link>
-              </>
-            )}
+            {/* Enhanced Action Buttons */}
+            <div className="flex items-center space-x-4">
+
+              {isAuthenticated() && (
+
+                <Button
+                  onClick={() => {
+                    localStorage.removeItem('access_token');
+                    localStorage.removeItem('refresh_token');
+                    router.push('/login');
+                  }}
+                  className="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white transition-colors font-semibold"
+                >
+                  Logout
+                </Button>
+              )
+              }
+
+
+            </div>
           </div>
         </div>
-      </nav>
 
-      {/* Breadcrumb */}
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center space-x-2 text-sm">
-          <Link href="/" className="text-gray-400 hover:text-amber-500 transition-colors">Home</Link>
-          <span className="text-gray-500">/</span>
-          <Link href="/events" className="text-gray-400 hover:text-amber-500 transition-colors">Events</Link>
-          <span className="text-gray-500">/</span>
-          <span className="text-gray-300">{event.title}</span>
-        </div>
-      </div>
+
+
+
+        {/* Animated particles effect */}
+        < div className="absolute inset-0 overflow-hidden pointer-events-none" >
+          <div className="absolute top-0 left-1/4 w-1 h-1 bg-amber-400/30 rounded-full animate-pulse delay-1000"></div>
+          <div className="absolute top-2 right-1/3 w-0.5 h-0.5 bg-amber-500/40 rounded-full animate-pulse delay-2000"></div>
+          <div className="absolute bottom-1 left-1/2 w-0.5 h-0.5 bg-amber-300/20 rounded-full animate-pulse delay-3000"></div>
+        </div >
+      </nav > {/* Breadcrumb */}
+
 
       {/* Hero Section */}
-      <section className="relative">
+      < section className="relative p-20 " >
         <div className="relative h-96 md:h-[500px] overflow-hidden">
           <Image
             src={
@@ -337,10 +359,10 @@ export default function EventDetailsPage() {
             </p>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* Event Details Section */}
-      <section className="container mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-3 gap-10">
+      < section className="container mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-3 gap-10" >
         <div className="lg:col-span-2">
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">About the Event</h2>
           <p className="text-gray-300 leading-relaxed mb-8">{event.description}</p>
@@ -456,10 +478,10 @@ export default function EventDetailsPage() {
             </div>
           )}
         </div>
-      </section>
+      </section >
 
       {/* Footer (copied from landing page for consistency) */}
-      <footer className="bg-slate-900 text-white py-12 px-4 mt-12">
+      < footer className="bg-slate-900 text-white py-12 px-4 mt-12" >
         <div className="container mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
@@ -519,7 +541,7 @@ export default function EventDetailsPage() {
             <p className="text-gray-500">© 2025 EveBuzz. All rights reserved.</p>
           </div>
         </div>
-      </footer>
-    </div>
+      </footer >
+    </div >
   );
 }

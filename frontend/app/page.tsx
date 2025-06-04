@@ -432,17 +432,15 @@ export default function EveBuzzLandingPage() {
                 <>
                   <button className="relative group px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-semibold text-sm tracking-wide shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 transition-all duration-300 hover:scale-105 overflow-hidden " onClick={handleSignInClick}
                   >
-
-                    <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <span className="relative z-10">Sign In</span>
                   </button>
-
-                  <button className="relative group px-6 py-2.5 rounded-xl bg-gradient-to-r from-$mber-500 to-amber-600 text-black font-semibold text-sm tracking-wide shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 transition-all duration-300 hover:scale-105 overflow-hidden" onClick={handleRegisterClick}  >
-
-                    <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <button className="relative group px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-semibold text-sm tracking-wide shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 transition-all duration-300 hover:scale-105 overflow-hidden " onClick={handleRegisterClick}
+                  >
                     <span className="relative z-10">Register</span>
-                    <div className="absolute -top-1 -right-1 h-2 w-2 bg-green-400 rounded-full animate-bounce"></div>
                   </button>
+
+
+
                 </>
               )}
 
