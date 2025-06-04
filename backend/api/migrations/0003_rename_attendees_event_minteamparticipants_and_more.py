@@ -3,6 +3,7 @@
 from django.db import migrations, models
 
 
+
 class Migration(migrations.Migration):
     dependencies = [
         ("api", "0002_remove_event_date_event_attendees_event_contact_info_and_more"),
