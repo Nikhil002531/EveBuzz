@@ -32,7 +32,15 @@ import {
 } from '@/components/ui/dialog';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image'; // Import Image component
+import Image from 'next/image';
+import { jwtDecode } from 'jwt-decode';
+
+// JWT Payload interface
+interface JwtPayload {
+  username: string;
+  is_staff: boolean;
+  exp: number;
+}
 
 // Event type definition
 type Event =
@@ -64,6 +72,23 @@ const isAuthenticated = (): boolean => {
   return false;
 };
 
+// Helper function to check admin status
+const checkAdminStatus = (): boolean => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('access_token');
+    if (!token) return false;
+
+    try {
+      const decoded: JwtPayload = jwtDecode(token);
+      return decoded.is_staff || false;
+    } catch (err) {
+      console.error('Error decoding token:', err);
+      return false;
+    }
+  }
+  return false;
+};
+
 export default function EventsListPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
@@ -76,7 +101,8 @@ export default function EventsListPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
-  const [isAuthChecked, setIsAuthChecked] = useState(false); // State to track if auth check is done
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false); // New state for admin status
 
   const eventsPerPage = 6;
   const router = useRouter();
@@ -85,9 +111,12 @@ export default function EventsListPage() {
   useEffect(() => {
     if (!isAuthenticated()) {
       console.log('User not authenticated, redirecting to login from EventsList...');
-      router.replace('/login'); // Use replace to prevent going back to /events after login
+      router.replace('/login');
     } else {
-      setIsAuthChecked(true); // Mark authentication check as complete only if authenticated
+      // Check admin status
+      const adminStatus = checkAdminStatus();
+      setIsAdmin(adminStatus);
+      setIsAuthChecked(true);
     }
   }, [router]);
 
@@ -100,7 +129,6 @@ export default function EventsListPage() {
     console.log('EventsList: Access Token from localStorage (inside fetchEvents):', accessToken);
 
     if (!accessToken) {
-      // This case should ideally be caught by the useEffect above, but serves as a fallback
       setError('Authentication token missing. Please log in.');
       setIsLoading(false);
       router.push('/login');
@@ -139,14 +167,14 @@ export default function EventsListPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [router]); // Added router to the dependency array
+  }, [router]);
 
   // Initial fetch - now depends on isAuthChecked
   useEffect(() => {
-    if (isAuthChecked) { // Only fetch if authentication check has completed
+    if (isAuthChecked) {
       fetchEvents();
     }
-  }, [isAuthChecked, fetchEvents]); // fetchEvents is now a dependency because it's memoized with useCallback
+  }, [isAuthChecked, fetchEvents]);
 
   // Filter and sort events
   useEffect(() => {
@@ -181,7 +209,7 @@ export default function EventsListPage() {
     }
 
     setFilteredEvents(result);
-    setCurrentPage(1); // Reset to first page when filters change
+    setCurrentPage(1);
   }, [events, selectedType, searchQuery, sortBy]);
 
   // Calculate pagination
@@ -216,7 +244,7 @@ export default function EventsListPage() {
 
       const response = await fetch(`http://localhost:8000/api/events/${id}/`, {
         method: 'DELETE',
-        headers: headers, // Ensure headers are passed for DELETE too
+        headers: headers,
       });
 
       if (!response.ok) {
@@ -230,12 +258,10 @@ export default function EventsListPage() {
         throw new Error(`Failed to delete event: ${response.status}`);
       }
 
-      // Remove the event from state
       setEvents(events.filter(event => event.id !== id));
       setDeleteConfirmId(null);
       setDeleteSuccess(`Event successfully deleted.`);
 
-      // Auto-clear success message after 3 seconds
       setTimeout(() => {
         setDeleteSuccess(null);
       }, 3000);
@@ -366,11 +392,14 @@ export default function EventsListPage() {
               Refresh
             </Button>
 
-            <Link href="/form">
-              <Button className="bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:from-amber-600 hover:to-amber-700">
-                + Add New Event
-              </Button>
-            </Link>
+            {/* Conditionally render Add New Event button only for admins */}
+            {isAdmin && (
+              <Link href="/form">
+                <Button className="bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:from-amber-600 hover:to-amber-700">
+                  + Add New Event
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -447,11 +476,14 @@ export default function EventsListPage() {
                 ? "No events match your current filters. Try adjusting your search criteria."
                 : "You haven't registered any events yet. Click the button below to add your first event."}
             </p>
-            <Link href="/form">
-              <Button className="bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:from-amber-600 hover:to-amber-700">
-                + Add New Event
-              </Button>
-            </Link>
+            {/* Conditionally render Add New Event button only for admins */}
+            {isAdmin && (
+              <Link href="/form">
+                <Button className="bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:from-amber-600 hover:to-amber-700">
+                  + Add New Event
+                </Button>
+              </Link>
+            )}
           </div>
         ) : (
           <>
@@ -462,55 +494,58 @@ export default function EventsListPage() {
                     <Image
                       src={getImageUrl(event.image)}
                       alt={event.title}
-                      fill // Use fill for responsive images
+                      fill
                       className="object-cover"
                     />
                     <div className="absolute top-4 left-4">
                       {renderEventTypeBadge(event.type, event.other_type_name)}
                     </div>
 
-                    <div className="absolute top-4 right-4 flex gap-2">
-                      <Link href={`/edit-event/${event.id}`}>
-                        <Button size="sm" variant="outline" className="bg-white/90 text-slate-700 border-none hover:bg-white">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </Link>
-
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="bg-white/90 text-red-500 border-none hover:bg-white hover:text-red-600"
-                            onClick={() => setDeleteConfirmId(event.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
+                    {/* Conditionally render edit/delete buttons only for admins */}
+                    {isAdmin && (
+                      <div className="absolute top-4 right-4 flex gap-2">
+                        <Link href={`/edit-event/${event.id}`}>
+                          <Button size="sm" variant="outline" className="bg-white/90 text-slate-700 border-none hover:bg-white">
+                            <Edit className="h-4 w-4" />
                           </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-md">
-                          <DialogHeader>
-                            <DialogTitle>Confirm Deletion</DialogTitle>
-                            <DialogDescription>
-                              Are you sure you want to delete the event "{event.title}"? This action cannot be undone.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <DialogFooter className="gap-2 sm:justify-end">
+                        </Link>
+
+                        <Dialog>
+                          <DialogTrigger asChild>
                             <Button
+                              size="sm"
                               variant="outline"
-                              onClick={() => setDeleteConfirmId(null)}
+                              className="bg-white/90 text-red-500 border-none hover:bg-white hover:text-red-600"
+                              onClick={() => setDeleteConfirmId(event.id)}
                             >
-                              Cancel
+                              <Trash2 className="h-4 w-4" />
                             </Button>
-                            <Button
-                              variant="destructive"
-                              onClick={() => handleDeleteEvent(event.id)}
-                            >
-                              Delete Event
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>Confirm Deletion</DialogTitle>
+                              <DialogDescription>
+                                Are you sure you want to delete the event "{event.title}"? This action cannot be undone.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter className="gap-2 sm:justify-end">
+                              <Button
+                                variant="outline"
+                                onClick={() => setDeleteConfirmId(null)}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                onClick={() => handleDeleteEvent(event.id)}
+                              >
+                                Delete Event
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    )}
                   </div>
                   <CardContent className="p-6">
                     <h3 className="text-xl font-bold mb-2 group-hover:text-amber-500 transition-colors">{event.title}</h3>
@@ -570,7 +605,6 @@ export default function EventsListPage() {
 
                   <div className="flex items-center gap-1">
                     {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                      // Logic to show pages around current page
                       let pageNum;
                       if (totalPages <= 5) {
                         pageNum = i + 1;
@@ -620,4 +654,3 @@ export default function EventsListPage() {
     </div>
   );
 }
-

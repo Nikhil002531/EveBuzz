@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,7 +12,6 @@ import {
   Mail,
   Users,
   ClipboardList,
-  DollarSign,
   ArrowLeft,
   Image,
   Link,
@@ -22,7 +21,10 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+import { jwtDecode } from "jwt-decode";
+
 const EventRegistrationForm = () => {
+  const router = useRouter();
   // Updated form data state with all required fields
   const [formData, setFormData] = useState({
     title: '',
@@ -359,6 +361,23 @@ const EventRegistrationForm = () => {
       </div>
     );
   }
+  useEffect(() => {
+
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
+
+    try {
+      const decoded: any = jwtDecode(token);
+      if (!decoded.is_staff) {
+        router.replace("/"); // redirect non-staff
+      }
+    } catch {
+      router.replace("/login"); // invalid token
+    }
+  }, [router]);
 
   // Registration form view
   return (

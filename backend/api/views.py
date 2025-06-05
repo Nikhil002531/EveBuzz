@@ -9,7 +9,11 @@ from .serializers import EventSerializer
 
 # Create your views here.
 from django.http import JsonResponse
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .token import MyTokenObtainPairSerializer
 
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
 
 def hello(request):
     return JsonResponse({"message": "Hello from Django!"})
