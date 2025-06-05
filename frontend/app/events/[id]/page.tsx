@@ -238,7 +238,7 @@ export default function EventDetailsPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-gray-800 to-black text-gray-900">
       {/* Navigation */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ease-out ${isScrolled
-        ? 'bg-white/8 backdrop-blur-2xl shadow-lg'
+        ? ' backdrop-blur-sm shadow-lg'
         : 'bg-gradient-to-b from-black/100 to-black/10'
         }`}>
         {/* Remove the glow line completely */}
@@ -266,16 +266,20 @@ export default function EventDetailsPage() {
 
             {/* Enhanced Navigation Links */}
             <div className="hidden lg:flex items-center space-x-12">
-              {['Home', 'Events', 'Calendar'].map((item, index) => (
+              {[
+                { name: 'Home', path: '/' },
+                { name: 'Events', path: '/events' },
+                { name: 'Calendar', path: '/#calendar' }
+              ].map((item, index) => (
                 <a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
+                  key={item.name}
+                  href={item.path}
                   className={`relative group transition-all duration-300 font-medium text-lg ${isScrolled
                     ? 'text-amber-400 hover:text-white drop-shadow-sm'
                     : 'text-gray-200 hover:text-white'
                     }`}
                 >
-                  <span className="relative z-10">{item}</span>
+                  <span className="relative z-10">{item.name}</span>
                   <div className="absolute -bottom-2 left-0 w-0 h-0.5 bg-gradient-to-r from-amber-500 to-amber-600 group-hover:w-full transition-all duration-300 rounded-full"></div>
                   <div className={`absolute -inset-3 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm ${isScrolled ? 'bg-white/10' : 'bg-white/5'
                     }`}></div>
@@ -319,7 +323,7 @@ export default function EventDetailsPage() {
 
 
       {/* Hero Section */}
-      < section className="relative p-20 " >
+      < section className="relative p-18 " >
         <div className="relative h-96 md:h-[500px] overflow-hidden">
           <Image
             src={
@@ -506,7 +510,7 @@ export default function EventDetailsPage() {
               <h3 className="text-lg font-bold mb-4">Quick Links</h3>
               <ul className="space-y-2">
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-amber-500 transition-colors">Home</a>
+                  <a href="/" className="text-gray-400 hover:text-amber-500 transition-colors">Home</a>
                 </li>
                 <li>
                   <a href="#events" className="text-gray-400 hover:text-amber-500 transition-colors">Events</a>

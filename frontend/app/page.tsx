@@ -374,7 +374,7 @@ export default function EveBuzzLandingPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-gray-800 to-black text-gray-900 flex flex-col">
       {/* Navigation */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ease-out ${isScrolled
-        ? 'bg-white/8 backdrop-blur-2xl shadow-lg'
+        ? 'backdrop-blur-sm backdrop-filter drop-shadow-sm '
         : 'bg-transparent'
         }`}>
         {/* Remove the glow line completely */}
