@@ -605,8 +605,8 @@ export default function EveBuzzLandingPage() {
                     <Button className="w-full bg-slate-800 text-white hover:bg-slate-700">
                       View Details
                     </Button>
-                  </Link>               
-                   </div>
+                  </Link>
+                </div>
               </div>
             ))}
 
@@ -707,7 +707,7 @@ export default function EveBuzzLandingPage() {
             <div>
               <div className="flex items-center space-x-2 mb-6">
                 <div className="h-10 w-10 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 flex items-center justify-center">
-                < Sparkles className="h-7 w-7 text-white drop-shadow-sm" />
+                  < Sparkles className="h-7 w-7 text-white drop-shadow-sm" />
 
                 </div>
                 <span className="text-2xl font-bold">EveBuzz</span>
@@ -734,6 +734,9 @@ export default function EveBuzzLandingPage() {
                 </li>
                 <li>
                   <a href="#calendar" className="text-gray-400 hover:text-amber-500 transition-colors">Calendar</a>
+                </li>
+                <li>
+                  <a href="/analytics" className="text-gray-400 hover:text-amber-500 transition-colors">Analytics</a>
                 </li>
               </ul>
             </div>

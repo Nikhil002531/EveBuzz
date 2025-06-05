@@ -27,6 +27,8 @@ const EventRegistrationForm = () => {
   const [formData, setFormData] = useState({
     title: '',
     type: '',
+
+    other_type_name: '', // Add this new field
     image: '',
     imageFile: null,
     imageSource: 'url', // 'url' or 'file'
@@ -219,6 +221,8 @@ const EventRegistrationForm = () => {
       body = new FormData();
       body.append('title', formData.title);
 
+      body.append('other_type_name', formData.other_type_name || ''); // Add this line
+      body.append('type', formData.type); // ← ADD THIS LINE
       body.append('description', formData.description);
       body.append('minTeamParticipants', formData.minTeamParticipants);
       body.append('maxTeamParticipants', formData.maxTeamParticipants);
@@ -237,6 +241,8 @@ const EventRegistrationForm = () => {
       body = JSON.stringify({
         title: formData.title,
 
+        other_type_name: formData.other_type_name || null, // Add this line
+        type: formData.type, // ← ADD THIS LINE
         image: formData.image,
         description: formData.description,
         minTeamParticipants: parseInt(formData.minTeamParticipants),
@@ -318,6 +324,8 @@ const EventRegistrationForm = () => {
                   setFormData({
                     title: '',
                     type: '',
+
+                    other_type_name: '', // Add this line
                     image: '',
                     imageFile: null,
                     imageSource: 'url',
@@ -355,7 +363,6 @@ const EventRegistrationForm = () => {
   // Registration form view
   return (
     <form encType='multipart/form-data'>
-
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-800 to-black flex items-center justify-center p-8 overflow-hidden relative">
         <Button
           onClick={handleBack}
@@ -365,7 +372,6 @@ const EventRegistrationForm = () => {
           <ArrowLeft size={24} className="mr-2" />
           Back
         </Button>
-
 
         <Card className="w-full max-w-4xl bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-amber-200/50 p-8 relative overflow-hidden">
           <div className="absolute -top-20 -right-20 w-64 h-64 bg-amber-300/20 rounded-full blur-3xl"></div>
@@ -385,328 +391,337 @@ const EventRegistrationForm = () => {
             </p>
           </CardHeader>
 
-          <CardContent className="relative z-10">
-            <div className="space-y-6">
-              {/* Event Title and Type */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="relative">
-                  <label className="block mb-2 flex items-center gap-2">
-                    <ClipboardList size={16} className="text-amber-600" />
-                    Event Title *
+          <CardContent className="space-y-6 mt-6">
+            <div className="relative">
+              <label className="block mb-2 flex items-center gap-2">
+                <ClipboardList size={16} className="text-amber-600" />
+                Event Title *
+              </label>
+              <Input
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                placeholder="Enter event title"
+                required
+                className="w-full"
+              />
+            </div>
+
+            <div className="relative">
+              <label className="block mb-2 flex items-center gap-2">
+                <Tag size={16} className="text-slate-600" />
+                Event Type *
+              </label>
+              <select
+                value={formData.type}
+                onChange={(e) => handleSelectChange(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                required
+              >
+                <option value="">Select event type</option>
+                {eventTypes.map((type) => (
+                  <option key={type} value={type.toLowerCase()}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+
+              {/* Show custom event type input when "others" is selected */}
+              {formData.type === 'others' && (
+                <div className="mt-3">
+                  <label className="block mb-2 text-sm text-gray-600">
+                    Please specify the event type *
                   </label>
                   <Input
-                    name="title"
-                    value={formData.title}
+                    name="other_type_name"
+                    value={formData.other_type_name}
                     onChange={handleChange}
-                    placeholder="Enter event title"
+                    placeholder="Enter custom event type (e.g., Photography Contest, Gaming Tournament)"
                     required
                     className="w-full"
                   />
                 </div>
+              )}
+            </div>
 
-                <div className="relative">
-                  <label className="block mb-2 flex items-center gap-2">
-                    <Tag size={16} className="text-slate-600" />
-                    Event Type *
-                  </label>
-                  <select
-                    value={formData.type}
-                    onChange={(e) => handleSelectChange(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                    required
-                  >
-                    <option value="">Select event type</option>
-                    {eventTypes.map((type) => (
-                      <option key={type} value={type.toLowerCase()}>
-                        {type}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+
+            {/* Image Section */}
+            <div>
+              <label className="block mb-2 flex items-center gap-2">
+                <Image size={16} className="text-slate-600" />
+                Event Image *
+              </label>
+
+              {/* Image source toggle */}
+              <div className="flex gap-4 mb-4">
+                <button
+                  type="button"
+                  onClick={() => handleImageSourceChange('url')}
+                  className={`px-4 py-2 rounded-lg border transition-all ${formData.imageSource === 'url'
+                    ? 'bg-amber-500 text-white border-amber-500'
+                    : 'bg-white text-gray-700 border-gray-300 hover:border-amber-300'
+                    }`}
+                >
+                  <Link size={16} className="inline mr-2" />
+                  Image URL
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleImageSourceChange('file')}
+                  className={`px-4 py-2 rounded-lg border transition-all ${formData.imageSource === 'file'
+                    ? 'bg-amber-500 text-white border-amber-500'
+                    : 'bg-white text-gray-700 border-gray-300 hover:border-amber-300'
+                    }`}
+                >
+                  <Upload size={16} className="inline mr-2" />
+                  Upload File
+                </button>
               </div>
 
+              {/* Image URL input */}
+              {formData.imageSource === 'url' && (
+                <Input
+                  name="image"
+                  value={formData.image}
+                  onChange={handleChange}
+                  placeholder="https://example.com/event-image.jpg"
+                  type="url"
+                  required
+                  className="w-full"
+                />
+              )}
 
-
-              {/* Image Section */}
-              <div>
-                <label className="block mb-2 flex items-center gap-2">
-                  <Image size={16} className="text-slate-600" />
-                  Event Image *
-                </label>
-
-                {/* Image source toggle */}
-                <div className="flex gap-4 mb-4">
-                  <button
-                    type="button"
-                    onClick={() => handleImageSourceChange('url')}
-                    className={`px-4 py-2 rounded-lg border transition-all ${formData.imageSource === 'url'
-                      ? 'bg-amber-500 text-white border-amber-500'
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-amber-300'
-                      }`}
-                  >
-                    <Link size={16} className="inline mr-2" />
-                    Image URL
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleImageSourceChange('file')}
-                    className={`px-4 py-2 rounded-lg border transition-all ${formData.imageSource === 'file'
-                      ? 'bg-amber-500 text-white border-amber-500'
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-amber-300'
-                      }`}
-                  >
-                    <Upload size={16} className="inline mr-2" />
-                    Upload File
-                  </button>
-                </div>
-
-                {/* Image URL input */}
-                {formData.imageSource === 'url' && (
-                  <Input
-                    name="image"
-                    value={formData.image}
-                    onChange={handleChange}
-                    placeholder="https://example.com/event-image.jpg"
-                    type="url"
+              {/* File upload input */}
+              {formData.imageSource === 'file' && (
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
                     required
-                    className="w-full"
                   />
-                )}
-
-                {/* File upload input */}
-                {formData.imageSource === 'file' && (
-                  <div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                      required
-                    />
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                      {!formData.imageFile ? (
-                        <div>
-                          <Upload className="mx-auto mb-2 text-gray-400" size={24} />
-                          <p className="text-gray-600 mb-2">Click to upload an image</p>
-                          <Button
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    {!formData.imageFile ? (
+                      <div>
+                        <Upload className="mx-auto mb-2 text-gray-400" size={24} />
+                        <p className="text-gray-600 mb-2">Click to upload an image</p>
+                        <Button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          variant="outline"
+                          className="border-amber-400 text-amber-700 hover:bg-amber-50"
+                        >
+                          Select Image
+                        </Button>
+                        <p className="text-xs text-gray-500 mt-2">Max size: 5MB</p>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="relative inline-block">
+                          {imagePreview && (
+                            <img
+                              src={imagePreview}
+                              alt="Preview"
+                              className="max-w-xs max-h-48 rounded-lg shadow-md"
+                            />
+                          )}
+                          <button
                             type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            variant="outline"
-                            className="border-amber-400 text-amber-700 hover:bg-amber-50"
+                            onClick={removeUploadedFile}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                           >
-                            Select Image
-                          </Button>
-                          <p className="text-xs text-gray-500 mt-2">Max size: 5MB</p>
+                            <X size={16} />
+                          </button>
                         </div>
-                      ) : (
-                        <div>
-                          <div className="relative inline-block">
-                            {imagePreview && (
-                              <img
-                                src={imagePreview}
-                                alt="Preview"
-                                className="max-w-xs max-h-48 rounded-lg shadow-md"
-                              />
-                            )}
-                            <button
-                              type="button"
-                              onClick={removeUploadedFile}
-                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                            >
-                              <X size={16} />
-                            </button>
-                          </div>
-                          <p className="text-green-600 mt-2 font-medium">
-                            {formData.imageFile.name}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                        <p className="text-green-600 mt-2 font-medium">
+                          {formData.imageFile.name}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
+            </div>
 
-              {/* Location */}
+            {/* Location */}
+            <div className="relative">
+              <label className="block mb-2 flex items-center gap-2">
+                <MapPin size={16} className="text-amber-600" />
+                Location *
+              </label>
+              <Input
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="Event venue/location"
+                required
+                className="w-full"
+              />
+            </div>
+
+            {/* Event Description */}
+            <div>
+              <label className="block mb-2">Event Description *</label>
+              <Textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="Describe your event in detail"
+                required
+                className="w-full min-h-[120px]"
+              />
+            </div>
+
+            {/* Start Date and End Date */}
+            <div className="grid md:grid-cols-2 gap-6">
               <div className="relative">
                 <label className="block mb-2 flex items-center gap-2">
-                  <MapPin size={16} className="text-amber-600" />
-                  Location *
+                  <Calendar size={16} className="text-slate-700" />
+                  Start Date & Time *
                 </label>
                 <Input
-                  name="location"
-                  value={formData.location}
+                  type="datetime-local"
+                  name="start_date"
+                  value={formData.start_date}
                   onChange={handleChange}
-                  placeholder="Event venue/location"
                   required
                   className="w-full"
                 />
               </div>
 
-              {/* Event Description */}
-              <div>
-                <label className="block mb-2">Event Description *</label>
-                <Textarea
-                  name="description"
-                  value={formData.description}
+              <div className="relative">
+                <label className="block mb-2 flex items-center gap-2">
+                  <Calendar size={16} className="text-amber-700" />
+                  End Date & Time *
+                </label>
+                <Input
+                  type="datetime-local"
+                  name="end_date"
+                  value={formData.end_date}
                   onChange={handleChange}
-                  placeholder="Describe your event in detail"
                   required
-                  className="w-full min-h-[120px]"
+                  className="w-full"
+                />
+              </div>
+            </div>
+
+            {/* Team Participants */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="relative">
+                <label className="block mb-2 flex items-center gap-2">
+                  <Users size={16} className="text-slate-600" />
+                  Minimum Team Participants
+                </label>
+                <Input
+                  type="number"
+                  name="minTeamParticipants"
+                  value={formData.minTeamParticipants}
+                  onChange={handleChange}
+                  placeholder="Minimum team size"
+
+                  min="1"
+                  className="w-full"
                 />
               </div>
 
-              {/* Start Date and End Date */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="relative">
-                  <label className="block mb-2 flex items-center gap-2">
-                    <Calendar size={16} className="text-slate-700" />
-                    Start Date & Time *
-                  </label>
-                  <Input
-                    type="datetime-local"
-                    name="start_date"
-                    value={formData.start_date}
-                    onChange={handleChange}
-                    required
-                    className="w-full"
-                  />
-                </div>
-
-                <div className="relative">
-                  <label className="block mb-2 flex items-center gap-2">
-                    <Calendar size={16} className="text-amber-700" />
-                    End Date & Time *
-                  </label>
-                  <Input
-                    type="datetime-local"
-                    name="end_date"
-                    value={formData.end_date}
-                    onChange={handleChange}
-                    required
-                    className="w-full"
-                  />
-                </div>
+              <div className="relative">
+                <label className="block mb-2 flex items-center gap-2">
+                  <Users size={16} className="text-amber-600" />
+                  Maximum Team Participants *
+                </label>
+                <Input
+                  type="number"
+                  name="maxTeamParticipants"
+                  value={formData.maxTeamParticipants}
+                  onChange={handleChange}
+                  placeholder="Maximum team size"
+                  required
+                  min="1"
+                  className="w-full"
+                />
               </div>
-
-              {/* Team Participants */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="relative">
-                  <label className="block mb-2 flex items-center gap-2">
-                    <Users size={16} className="text-slate-600" />
-                    Minimum Team Participants
-                  </label>
-                  <Input
-                    type="number"
-                    name="minTeamParticipants"
-                    value={formData.minTeamParticipants}
-                    onChange={handleChange}
-                    placeholder="Minimum team size"
-
-                    min="1"
-                    className="w-full"
-                  />
-                </div>
-
-                <div className="relative">
-                  <label className="block mb-2 flex items-center gap-2">
-                    <Users size={16} className="text-amber-600" />
-                    Maximum Team Participants *
-                  </label>
-                  <Input
-                    type="number"
-                    name="maxTeamParticipants"
-                    value={formData.maxTeamParticipants}
-                    onChange={handleChange}
-                    placeholder="Maximum team size"
-                    required
-                    min="1"
-                    className="w-full"
-                  />
-                </div>
-              </div>
-
-              {/* Price and Organizer */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="relative">
-                  <label className="block mb-2 flex items-center gap-2">
-                    <span className="text-amber-600 text-lg font-semibold">₹</span>
-                    Price *
-                  </label>
-                  <Input
-                    name="price"
-                    value={formData.price}
-                    onChange={handleChange}
-                    placeholder="Enter price (e.g., Free, ₹500, ₹1000-₹1500)"
-                    required
-                    className="w-full"
-                  />
-                </div>
-
-                <div className="relative">
-                  <label className="block mb-2 flex items-center gap-2">
-                    <User size={16} className="text-slate-600" />
-                    Organizer *
-                  </label>
-                  <Input
-                    name="organizer"
-                    value={formData.organizer}
-                    onChange={handleChange}
-                    placeholder="Organization/Organizer name"
-                    required
-                    className="w-full"
-                  />
-                </div>
-              </div>
-
-              {/* Contact Info and Registration Link */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="relative">
-                  <label className="block mb-2 flex items-center gap-2">
-                    <Mail size={16} className="text-amber-600" />
-                    Contact Information *
-                  </label>
-                  <Input
-                    name="contact_info"
-                    value={formData.contact_info}
-                    onChange={handleChange}
-                    placeholder="Email or phone number"
-                    required
-                    className="w-full"
-                  />
-                </div>
-
-                <div className="relative">
-                  <label className="block mb-2 flex items-center gap-2">
-                    <Link size={16} className="text-slate-600" />
-                    Registration Link *
-                  </label>
-                  <Input
-                    type="url"
-                    name="registrationLink"
-                    value={formData.registrationLink}
-                    onChange={handleChange}
-                    placeholder="https://example.com/register"
-                    required
-                    className="w-full"
-                  />
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <Button
-                onClick={handleSubmit}
-                className="w-full mt-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-semibold shadow-lg transition-all duration-300 hover:shadow-xl"
-              >
-                Register Event
-              </Button>
-
             </div>
+
+            {/* Price and Organizer */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="relative">
+                <label className="block mb-2 flex items-center gap-2">
+                  <span className="text-amber-600 text-lg font-semibold">₹</span>
+                  Price *
+                </label>
+                <Input
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  placeholder="Enter price (e.g., Free, ₹500, ₹1000-₹1500)"
+                  required
+                  className="w-full"
+                />
+              </div>
+
+              <div className="relative">
+                <label className="block mb-2 flex items-center gap-2">
+                  <User size={16} className="text-slate-600" />
+                  Organizer *
+                </label>
+                <Input
+                  name="organizer"
+                  value={formData.organizer}
+                  onChange={handleChange}
+                  placeholder="Organization/Organizer name"
+                  required
+                  className="w-full"
+                />
+              </div>
+            </div>
+
+            {/* Contact Info and Registration Link */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="relative">
+                <label className="block mb-2 flex items-center gap-2">
+                  <Mail size={16} className="text-amber-600" />
+                  Contact Information *
+                </label>
+                <Input
+                  name="contact_info"
+                  value={formData.contact_info}
+                  onChange={handleChange}
+                  placeholder="Email or phone number"
+                  required
+                  className="w-full"
+                />
+              </div>
+
+              <div className="relative">
+                <label className="block mb-2 flex items-center gap-2">
+                  <Link size={16} className="text-slate-600" />
+                  Registration Link *
+                </label>
+                <Input
+                  type="url"
+                  name="registrationLink"
+                  value={formData.registrationLink}
+                  onChange={handleChange}
+                  placeholder="https://example.com/register"
+                  required
+                  className="w-full"
+                />
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <Button
+              onClick={handleSubmit}
+              className="w-full mt-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-semibold shadow-lg transition-all duration-300 hover:shadow-xl"
+            >
+              Register Event
+            </Button>
           </CardContent>
         </Card>
       </div>
-    </form>
-
+    </form >
   );
 };
 

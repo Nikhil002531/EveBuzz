@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Clock, MapPin, Users, ArrowLeft, Bell, User, Sparkles, Share2, ExternalLink, Mail, Phone, DollarSign, ChevronLeft, ChevronRight, Loader2, CircleAlert } from 'lucide-react'; // Added Loader2 and CircleAlert
+import { Calendar as CalendarIcon, Clock, MapPin, Users, ArrowLeft, Bell, User, Sparkles, Share2, ExternalLink, Mail, Phone, IndianRupee, ChevronLeft, ChevronRight, Loader2, CircleAlert } from 'lucide-react'; // Added Loader2 and CircleAlert
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
@@ -288,7 +288,7 @@ export default function EventDetailsPage() {
             </div>
 
             {/* Enhanced Action Buttons */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4 cursor-pointer">
 
               {isAuthenticated() && (
 
@@ -298,7 +298,7 @@ export default function EventDetailsPage() {
                     localStorage.removeItem('refresh_token');
                     router.push('/login');
                   }}
-                  className="px-4 py-2 rounded-md border-2 border-red-600 text-red-600 font-semibold bg-transparent hover:bg-red-50 transition-colors focus:ring-2 focus:ring-red-400"                >
+                  className=" cursor-pointer px-4 py-2 rounded-md border-2 border-red-600 text-red-600 font-semibold bg-transparent hover:bg-red-50 transition-colors focus:ring-2 focus:ring-red-400"                >
                   Logout
                 </Button>
               )
@@ -321,8 +321,17 @@ export default function EventDetailsPage() {
       </nav > {/* Breadcrumb */}
 
 
+
       {/* Hero Section */}
-      < section className="relative p-18 " >
+      < section className="relative p-23 pb-0" >
+        <Button
+          onClick={() => router.push("/")}
+          variant="default"
+          className="top-0 left-6 mb-5 cursor-pointer  bg-amber-500 text-black hover:bg-amber-400 font-semibold "
+        >
+          <ArrowLeft size={24} className="mr-2" />
+          Back To Events
+        </Button>
         <div className="relative h-96 md:h-[500px] overflow-hidden">
           <Image
             src={
@@ -332,7 +341,7 @@ export default function EventDetailsPage() {
             }
             alt={event.title}
             fill
-            className="object-cover"
+            className="  rounded-xl flex-shrink-0"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
 
@@ -342,15 +351,15 @@ export default function EventDetailsPage() {
           </div>
 
           {/* Share Button */}
-          <div className="absolute top-6 right-6">
-            <Button
-              onClick={handleShare}
-              className="bg-white/90 backdrop-blur-sm p-3 rounded-full hover:bg-white transition-colors"
-              size="icon"
-            >
-              <Share2 className="h-5 w-5 text-slate-700" />
-            </Button>
-          </div>
+          {/* <div className="absolute top-6 right-6"> */}
+          {/*   <Button */}
+          {/*     onClick={handleShare} */}
+          {/*     className="bg-white/90 backdrop-blur-sm p-3 rounded-full hover:bg-white transition-colors" */}
+          {/*     size="icon" */}
+          {/*   > */}
+          {/*     <Share2 className="h-5 w-5 text-slate-700" /> */}
+          {/*   </Button> */}
+          {/* </div> */}
 
           {/* Event Title Overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-white">
@@ -396,10 +405,12 @@ export default function EventDetailsPage() {
               </div>
             </div>
             <div className="bg-white/5 p-6 rounded-lg shadow-inner flex items-center gap-4">
-              <DollarSign className="h-8 w-8 text-amber-500" />
+              <IndianRupee className="h-8 w-8 text-amber-500" />
               <div>
                 <p className="text-gray-400 text-sm">Price</p>
-                <p className="font-semibold text-white">{event.price === '0' ? 'Free' : `$${event.price}`}</p>
+                <p className="font-semibold text-white">{event.price === '0' ? 'Free' : `${event.price}`}</p>
+
+
               </div>
             </div>
           </div>
@@ -436,7 +447,7 @@ export default function EventDetailsPage() {
             <Button
               onClick={addToCalendar}
               variant="outline"
-              className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white py-3 text-lg font-semibold"
+              className="w-full border-gray-600 text-gray-300 bg-gray-700 hover:text-amber-500 bg-gray-800 py-3 text-lg font-semibold"
             >
               Add to Google Calendar <CalendarIcon className="ml-2 h-5 w-5" />
             </Button>
@@ -460,7 +471,7 @@ export default function EventDetailsPage() {
                       alt={relatedEvent.title}
                       width={80}
                       height={80}
-                      className="rounded-md object-cover flex-shrink-0"
+                      className="rounded-xl object-cover flex-shrink-0" // Changed from rounded to rounded-xl
                     />
                     <div>
                       <h4 className="font-semibold text-white text-lg">{relatedEvent.title}</h4>
@@ -512,10 +523,10 @@ export default function EventDetailsPage() {
                   <a href="/" className="text-gray-400 hover:text-amber-500 transition-colors">Home</a>
                 </li>
                 <li>
-                  <a href="#events" className="text-gray-400 hover:text-amber-500 transition-colors">Events</a>
+                  <a href="/events" className="text-gray-400 hover:text-amber-500 transition-colors">Events</a>
                 </li>
                 <li>
-                  <a href="#calendar" className="text-gray-400 hover:text-amber-500 transition-colors">Calendar</a>
+                  <a href="/#calendar" className="text-gray-400 hover:text-amber-500 transition-colors">Calendar</a>
                 </li>
               </ul>
             </div>
