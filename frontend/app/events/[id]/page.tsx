@@ -294,8 +294,7 @@ export default function EventDetailsPage() {
                     localStorage.removeItem('refresh_token');
                     router.push('/login');
                   }}
-                  className="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white transition-colors font-semibold"
-                >
+                  className="px-4 py-2 rounded-md border-2 border-red-600 text-red-600 font-semibold bg-transparent hover:bg-red-50 transition-colors focus:ring-2 focus:ring-red-400"                >
                   Logout
                 </Button>
               )

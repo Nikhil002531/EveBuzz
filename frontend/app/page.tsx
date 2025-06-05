@@ -423,14 +423,13 @@ export default function EveBuzzLandingPage() {
             <div className="flex items-center space-x-4">
 
               {isLoggedIn ? (
-                <button className="relative group px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-semibold text-sm tracking-wide shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 transition-all duration-300 hover:scale-105 overflow-hidden" onClick={handleLogout}
+                <button className="px-4 py-2 rounded-md border-2 border-red-600 text-red-600 font-semibold bg-transparent hover:bg-red-50 transition-colors focus:ring-2 focus:ring-red-400" onClick={handleLogout}
                 >
 
-                  <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <span className="relative z-10">logout</span>
+                  <span className="relative z-10">Logout</span>
                 </button>) : (
                 <>
-                  <button className="relative group px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-semibold text-sm tracking-wide shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 transition-all duration-300 hover:scale-105 overflow-hidden " onClick={handleSignInClick}
+                  <button className="relative group px-6 py-2.5 rounded-xl border-2 border-amber-500 text-amber-500 font-semibold text-sm tracking-wide shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 transition-all duration-300 hover:scale-105 overflow-hidden bg-transparent hover:bg-amber-50 focus:ring-2 focus:ring-amber-400" onClick={handleSignInClick}
                   >
                     <span className="relative z-10">Sign In</span>
                   </button>
@@ -473,18 +472,18 @@ export default function EveBuzzLandingPage() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
                   <Link href="/events">
-                    <button className="w-full px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-black rounded-lg hover:opacity-90 transition-all flex items-center justify-center font-semibold">
+                    <button className=" px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-black rounded-lg hover:opacity-90 transition-all flex items-center justify-center font-semibold">
                       Explore Events <ArrowRight className="ml-2 h-5 w-5" />
                     </button>
                   </Link>
                 </div>
-                <div className="flex-1">
+                {/* <div className="flex-1">
                   <Link href="#how-it-works" scroll={true} className="w-full">
                     <button className="w-full px-6 py-3 border border-gray-600 text-gray-200 rounded-lg hover:bg-slate-800 transition-all">
                       How It Works
                     </button>
                   </Link>
-                </div>
+                </div> */}
               </div>
 
               <div className="mt-10 flex items-center space-x-4">
@@ -518,7 +517,7 @@ export default function EveBuzzLandingPage() {
         </div>
       </section >
 
-      {/* Search and Filter Bar */}
+      {/* Search and Filter Bar
       < section className="py-8 px-4 bg-slate-800" >
         <div className="container mx-auto">
           <div className="bg-white rounded-xl shadow-md p-4">
@@ -553,7 +552,7 @@ export default function EveBuzzLandingPage() {
             </div>
           </div>
         </div>
-      </section >
+      </section > */}
 
 
       {/* Featured Events */}
@@ -606,7 +605,8 @@ export default function EveBuzzLandingPage() {
                     <Button className="w-full bg-slate-800 text-white hover:bg-slate-700">
                       View Details
                     </Button>
-                  </Link>                </div>
+                  </Link>               
+                   </div>
               </div>
             ))}
 
@@ -707,7 +707,8 @@ export default function EveBuzzLandingPage() {
             <div>
               <div className="flex items-center space-x-2 mb-6">
                 <div className="h-10 w-10 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 flex items-center justify-center">
-                  <Bell className="h-6 w-6 text-white" />
+                < Sparkles className="h-7 w-7 text-white drop-shadow-sm" />
+
                 </div>
                 <span className="text-2xl font-bold">EveBuzz</span>
               </div>
